@@ -1,0 +1,33 @@
+{
+  "name": "ocroluse-node-widget",
+  "version": "0.1.0",
+  "description": "A sample server accompanying the ocrolus widget ",
+  "main": "index.js",
+  "license": "ISC",
+  "scripts": {
+    "start": "node index.js",
+    "watch": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ocrolus/widget-quickstart.git"
+  },
+  "keywords": [
+    "widget"
+  ],
+  "author": "Jonathan Bruce (jbruce1@ocrolus.com)",
+  "bugs": {
+    "url": "https://github.com/Ocrolus/widget-quickstart/issues"
+  },
+  "homepage": "https://github.com/Ocrolus/widget-quickstart#readme",
+  "dependencies": {
+    "bent": "^7.3.12",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
