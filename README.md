@@ -1,11 +1,10 @@
-####
-Ocrolus Widget Quickstart
+## Ocrolus Widget Quickstart
 
 This repository is meant to demonstrate a simplified environment running the Ocrolus quickstart widget. The intent is to show in a couple of languages what a widget integration would entail so that developers can apply their knowledge of typical web development environments to the interfaces of the Ocrolus widget.
 
 - [1. Pull the repository](#1-pull-the-repository)
   - [Note for Windows](#note-for-windows)
-- [2. Set up your environment variables](#2-set-up-your-environment-variables)
+- [2. Set up widget environment variables](#2-set-up-widget-environment-variables)
 - [3. Global prerequisites](#3-global-prerequisites)
 - [4. Run the quickstart](#4-run-the-quickstart)
   - [Run without Docker](#run-without-docker)
@@ -16,7 +15,7 @@ This repository is meant to demonstrate a simplified environment running the Ocr
     - [3. Running the frontend](#3-running-the-frontend)
   - [Run with Docker](#run-with-docker)
     - [Pre-requisites](#pre-requisites-1)
-    - [Running](#running-1)
+    - [Running](#running)
 
 ## 1. Pull the repository
 
@@ -41,11 +40,11 @@ cp .env.example .env
 
 Copy `.env.example` to a new file called `.env`. `OCROLUS_CLIENT_ID`, `OCROLUS_CLIENT_SECRET`, `ENVIRONMENT` must all be set. Get your Client ID and secrets from the dashboard: https://dashboard-demo.ocrolus.com/settings/widgets.
 
-### 3. Global Prerequisites
+## 3. Global Prerequisites
 
 Install `mkcert` [how-to](https://github.com/FiloSottile/mkcert#installation). This is a global pre-requisite as the development certificate to be trusted locally via your browser it needs to be executed in the browser's executing environment.
 
-### 4. Run the quickstart
+## 4. Run the quickstart
 
 ### Run without Docker
 
@@ -115,4 +114,4 @@ There are two `make` commands relative to running with docker.
 `make clean_docker` Which will rebuild and run the docker containers.
 `make run_docker` Which will do a cached, if possible, build and run the docker containers
 
-`make clean docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
+`make clean_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
