@@ -2,10 +2,22 @@
 
 This repository is meant to demonstrate a simplified environment running the Ocrolus quickstart widget. The intent is to show in a couple of languages what a widget integration would entail so that developers can apply their knowledge of typical web development environments to the interfaces of the Ocrolus widget.
 
+![Ocrolus Widget quickstart](/sample.png)
+
+
 - [1. Pull the repository](#1-pull-the-repository)
   - [Note for Windows](#note-for-windows)
 - [2. Set up widget environment variables](#2-set-up-widget-environment-variables)
 - [3. Global prerequisites](#3-global-prerequisites)
+  - [MKcert](#MKcert)
+  - [Default Configuration](#default-configuration)
+    - [Default Dashboard](#default-dashboard)
+    - [Default Caddyfile](#default-caddyfile)
+    - [Default Routing](#default-routing)
+  - [Custom Configuration](#custom-configuration)
+    - [Custom Dashboard](#custom-dashboard)
+    - [Custom Caddyfile](#custom-caddyfile)
+    - [Custom Routing](#custom-routing)
 - [4. Run the quickstart](#4-run-the-quickstart)
   - [Run without Docker](#run-without-docker)
     - [Pre-requisites](#pre-requisites)
@@ -42,7 +54,68 @@ Copy `.env.example` to a new file called `.env`. `OCROLUS_CLIENT_ID`, `OCROLUS_C
 
 ## 3. Global Prerequisites
 
+### Mkcert
 Install `mkcert` [how-to](https://github.com/FiloSottile/mkcert#installation). This is a global pre-requisite as the development certificate to be trusted locally via your browser it needs to be executed in the browser's executing environment.
+
+### Default Configuration
+
+#### Default Dashboard
+Configure a widget in dashboard and make sure that in the `Allowed URLS` field of your configuration the URL you expect to use is allowed. The widget iframe will refuse to render unless your URL is in the allow list. To allow for the default configuration to work simply add `www.ocrolusexample.com`.
+
+#### Default Caddyfile
+The caddyfile should be configured to run functionally as is provided the `Routing` step is followed.
+
+#### Default Routing
+Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` replace the `MY.ALLOWED_URL.TLD` with the URL you want to host locally. If you want to use the base configuration set the etc hosts to contain
+
+```
+127.0.0.1 www.ocrolusexample.com
+127.0.0.1 auth.ocrolusexample.com
+```
+
+### Custom Configuration
+
+if the configuration is custom then the `initialize the certs` step will not be sufficient. If configuring custom urls then run locally the following commands:
+
+Generate and install new CA root certificate using `mkcert`
+```sh
+mkcert -install
+```
+Generate self-signed ssl certificate to us in caddy
+```sh
+mkcert <my_frontend_url> localhost 127.0.0.1 ::1
+mkcert <my_server_url> localhost 127.0.0.1 ::1
+mv <my_frontend_url>+3-key.pem reverse-proxy/
+mv <my_frontend_url>+3.pem reverse-proxy/
+mv <my_server_url>+3-key.pem reverse-proxy/
+mv <my_server_url>+3.pem reverse-proxy/
+```
+
+
+### Custom Dashboard
+Configure a widget in dashboard and add <my_frontend_url> to the `Allowed URLS` field.
+
+### Custom Caddyfile
+If a custom configuration is desired configure the /reverse-proxy/Caddyfile such that `www.ocrolusexample.com` and `auth.ocrolusexample.com` are updated to the URLs that you want to use for your development machine.
+
+```
+<my_frontend_url> {
+	tls <my_frontend_url>+3.pem <my_frontend_url>+3-key.pem
+	reverse_proxy frontend:3000
+}
+<my_server_url> {
+	tls <my_server_url>+3.pem <my_server_url>+3-key.pem
+	reverse_proxy node:8000
+}
+```
+
+### Custom Routing
+Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` replace the `MY.ALLOWED_URL.TLD` with the URL you want to host locally.
+
+```
+127.0.0.1 <my_frontend_url>
+127.0.0.1 <my_server_url>
+```
 
 ## 4. Run the quickstart
 
