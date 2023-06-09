@@ -11,19 +11,15 @@ function App() {
         const json = await response.json()
         return json.accessToken
     }}, [])
-    const [render, setRender] = useState(true)
     
     return (
         <Box sx={{ display: 'flex' }}>
             <Sidebar />
             <Box component="main" className='content-column' sx={{ flexGrow: 1, p: 3 }}>
-                <button onClick={() => setRender(!render)}>Toggle widget</button>
                 <IncomePrompt />
-                { render && (
-                    <Module>
-                        <Box id="ocrolus-widget-frame"></Box>
-                    </Module> 
-                )}
+                <Module>
+                    <Box id="ocrolus-widget-frame"></Box>
+                </Module> 
             </Box>
         </Box>
     )

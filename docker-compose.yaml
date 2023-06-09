@@ -1,1 +1,43 @@
 
+version: "3.4"
+x-environment:
+  &WIDGET_ENVIRONMENT # These are read from .env file. The values in the .env file maybe overriden by shell envvars
+  OCROLUS_WIDGET_ENVIRONMENT: ${OCROLUS_WIDGET_ENVIRONMENT}
+  OCROLUS_CLIENT_ID: ${OCROLUS_CLIENT_ID}
+  OCROLUS_CLIENT_SECRET: ${OCROLUS_CLIENT_SECRET}
+services:
+  caddy:
+    networks:
+      - "quickstart"
+    build:
+      context: .
+      dockerfile: ./reverse-proxy/Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - "frontend"
+      - "node"
+  node:
+    networks:
+      - "quickstart"
+    build:
+      context: .
+      dockerfile: ./node/Dockerfile
+    ports:
+      - 8000
+    environment:
+      <<: *WIDGET_ENVIRONMENT
+  frontend:
+    depends_on:
+      - "node"
+    networks:
+      - "quickstart"
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    ports: 
+      - 3000
+networks:
+  quickstart:
+    name: quickstart
