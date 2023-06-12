@@ -70,6 +70,8 @@ Install `mkcert` [how-to](https://github.com/FiloSottile/mkcert#installation). T
 Configure a widget in dashboard and make sure that in the `Allowed URLS` field of your configuration the URL you expect to use is allowed. The widget iframe will refuse to render unless your URL is in the allow list. To allow for the default configuration to work simply add `www.ocrolusexample.com`.
 
 #### Default Caddyfile
+Running `make initialize_certs` will create two sets of CA signed keys to be utilized by your reverse proxy for the backend and the front end respectively. It will copy those certs into the `reverse-proxy` directory.
+
 The caddyfile should be configured to run functionally as is provided the `Routing` step is followed.
 
 #### Default Routing
@@ -96,9 +98,7 @@ Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` re
 
 ##### Certs
 
-Running `make initialize_certs` will create two sets of CA signed keys to be utilized by your reverse proxy for the backend and the front end respectively. It will copy those cets into the `reverse-proxy` directory.
-
-Subsequently we need to modify and run the reverse proxy.
+We need to modify and run the reverse proxy.
 
 Update the /reverse-proxy/Caddyfile reverse-proxy url to localhost rather than the docker network alias.
 
