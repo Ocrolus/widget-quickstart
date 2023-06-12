@@ -32,12 +32,18 @@ This repository is meant to demonstrate a simplified environment running the Ocr
 ## 1. Pull the repository
 
 Using https:
-git clone https://github.com/Ocrolus/widget-quickstart
+
+```sh
+git clone https://github.com/Ocrolus/widget-quickstart;
 cd widget-quickstart
+```
+
 Alternatively, if you use ssh:
 
-git clone git@github.com:Ocrolus/widget-quickstart.git
+```sh
+git clone git@github.com:Ocrolus/widget-quickstart.git;
 cd widget-quickstart
+```
 
 ### Note for Windows
 Note - because this repository makes use of symbolic links, to run this on a Windows machine, make sure you have checked the "enable symbolic links" box when you download Git to your local machine. Then you can run the above commands to clone the quickstart. Otherwise, you may open your Git Bash terminal as an administrator and use the following command when cloning the project
