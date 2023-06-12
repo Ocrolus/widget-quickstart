@@ -31,10 +31,10 @@ run_node:
 run_frontend:
 	npm start --prefix ./frontend
 
-.PHONY: docker_run
-docker_run:
+.PHONY: run_docker
+run_docker:
 	docker-compose up
 
-.PHONY: docker_rebuild
-docker_rebuild:
+.PHONY: rebuild_docker
+rebuild_docker:
 	docker-compose up --build
