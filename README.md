@@ -185,10 +185,10 @@ mv <my_server_url>+3.pem reverse-proxy/
 ```
 
 
-##3 Custom Dashboard
+#### Custom Dashboard
 Configure a widget in dashboard and add <my_frontend_url> to the `Allowed URLS` field.
 
-### Custom Caddyfile
+#### Custom Caddyfile
 If a custom configuration is desired configure the /reverse-proxy/Caddyfile such that `www.ocrolusexample.com` and `auth.ocrolusexample.com` are updated to the URLs that you want to use for your development machine.
 
 ```
@@ -202,7 +202,7 @@ If a custom configuration is desired configure the /reverse-proxy/Caddyfile such
 }
 ```
 
-### Custom Routing
+#### Custom Routing
 Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` replace the `MY.ALLOWED_URL.TLD` with the URL you want to host locally.
 
 ```
