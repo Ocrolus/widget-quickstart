@@ -160,10 +160,10 @@ alternatively `make run_frontend`
 
 There are two `make` commands relative to running with docker.
 
-`make clean_docker` Which will rebuild and run the docker containers.
+`make rebuild_docker` Which will rebuild and run the docker containers.
 `make run_docker` Which will do a cached, if possible, build and run the docker containers
 
-`make clean_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
+`make rebuild_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
 
 ### Custom Configuration
 **Only follow this set of steps if you're looking to use a custom URL for your example app.**
