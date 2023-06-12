@@ -14,10 +14,6 @@ This repository is meant to demonstrate a simplified environment running the Ocr
     - [Default Dashboard](#default-dashboard)
     - [Default Caddyfile](#default-caddyfile)
     - [Default Routing](#default-routing)
-  - [Custom Configuration](#custom-configuration)
-    - [Custom Dashboard](#custom-dashboard)
-    - [Custom Caddyfile](#custom-caddyfile)
-    - [Custom Routing](#custom-routing)
 - [4. Run the quickstart](#4-run-the-quickstart)
   - [Run without Docker](#run-without-docker)
     - [Pre-requisites](#pre-requisites)
@@ -28,7 +24,10 @@ This repository is meant to demonstrate a simplified environment running the Ocr
   - [Run with Docker](#run-with-docker)
     - [Pre-requisites](#pre-requisites-1)
     - [Running](#running)
-
+  - [Custom Configuration](#custom-configuration)
+    - [Custom Dashboard](#custom-dashboard)
+    - [Custom Caddyfile](#custom-caddyfile)
+    - [Custom Routing](#custom-routing)
 ## 1. Pull the repository
 
 Using https:
@@ -79,50 +78,6 @@ Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` re
 ```
 127.0.0.1 www.ocrolusexample.com
 127.0.0.1 auth.ocrolusexample.com
-```
-
-### Custom Configuration
-
-if the configuration is custom then the `initialize the certs` step will not be sufficient. If configuring custom urls then run locally the following commands:
-
-Generate and install new CA root certificate using `mkcert`
-```sh
-mkcert -install
-```
-Generate self-signed ssl certificate to us in caddy
-```sh
-mkcert <my_frontend_url> localhost 127.0.0.1 ::1
-mkcert <my_server_url> localhost 127.0.0.1 ::1
-mv <my_frontend_url>+3-key.pem reverse-proxy/
-mv <my_frontend_url>+3.pem reverse-proxy/
-mv <my_server_url>+3-key.pem reverse-proxy/
-mv <my_server_url>+3.pem reverse-proxy/
-```
-
-
-### Custom Dashboard
-Configure a widget in dashboard and add <my_frontend_url> to the `Allowed URLS` field.
-
-### Custom Caddyfile
-If a custom configuration is desired configure the /reverse-proxy/Caddyfile such that `www.ocrolusexample.com` and `auth.ocrolusexample.com` are updated to the URLs that you want to use for your development machine.
-
-```
-<my_frontend_url> {
-	tls <my_frontend_url>+3.pem <my_frontend_url>+3-key.pem
-	reverse_proxy frontend:3000
-}
-<my_server_url> {
-	tls <my_server_url>+3.pem <my_server_url>+3-key.pem
-	reverse_proxy node:8000
-}
-```
-
-### Custom Routing
-Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` replace the `MY.ALLOWED_URL.TLD` with the URL you want to host locally.
-
-```
-127.0.0.1 <my_frontend_url>
-127.0.0.1 <my_server_url>
 ```
 
 ## 4. Run the quickstart
@@ -209,3 +164,48 @@ There are two `make` commands relative to running with docker.
 `make run_docker` Which will do a cached, if possible, build and run the docker containers
 
 `make clean_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
+
+### Custom Configuration
+**Only follow this set of steps if you're looking to use a custom URL for your example app.**
+
+If the configuration is custom then the `initialize the certs` step will not be sufficient. If configuring custom urls then run locally the following commands:
+
+Generate and install new CA root certificate using `mkcert`
+```sh
+mkcert -install
+```
+Generate self-signed ssl certificate to us in caddy
+```sh
+mkcert <my_frontend_url> localhost 127.0.0.1 ::1
+mkcert <my_server_url> localhost 127.0.0.1 ::1
+mv <my_frontend_url>+3-key.pem reverse-proxy/
+mv <my_frontend_url>+3.pem reverse-proxy/
+mv <my_server_url>+3-key.pem reverse-proxy/
+mv <my_server_url>+3.pem reverse-proxy/
+```
+
+
+##3 Custom Dashboard
+Configure a widget in dashboard and add <my_frontend_url> to the `Allowed URLS` field.
+
+### Custom Caddyfile
+If a custom configuration is desired configure the /reverse-proxy/Caddyfile such that `www.ocrolusexample.com` and `auth.ocrolusexample.com` are updated to the URLs that you want to use for your development machine.
+
+```
+<my_frontend_url> {
+	tls <my_frontend_url>+3.pem <my_frontend_url>+3-key.pem
+	reverse_proxy frontend:3000
+}
+<my_server_url> {
+	tls <my_server_url>+3.pem <my_server_url>+3-key.pem
+	reverse_proxy node:8000
+}
+```
+
+### Custom Routing
+Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` replace the `MY.ALLOWED_URL.TLD` with the URL you want to host locally.
+
+```
+127.0.0.1 <my_frontend_url>
+127.0.0.1 <my_server_url>
+```
