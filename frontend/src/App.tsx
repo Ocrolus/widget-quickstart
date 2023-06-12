@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Box } from '@mui/material'
 import Sidebar from 'Components/Sidebar'
 import IncomePrompt from 'Components/IncomePrompt'

@@ -35,6 +35,6 @@ run_frontend:
 docker_run:
 	docker-compose up
 
-.PHONY: clean_docker
+.PHONY: docker_rebuild
 docker_rebuild:
 	docker-compose up --build

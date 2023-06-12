@@ -135,7 +135,20 @@ Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` re
 
 Running `make initialize_certs` will create two sets of CA signed keys to be utilized by your reverse proxy for the backend and the front end respectively. It will copy those cets into the `reverse-proxy` directory.
 
-Subsequently we need to run the reverse proxy.
+Subsequently we need to modify and run the reverse proxy.
+
+Update the /reverse-proxy/Caddyfile reverse-proxy url to localhost rather than the docker network alias.
+
+```
+<my_frontend_url> {
+	tls <my_frontend_url>+3.pem <my_frontend_url>+3-key.pem
+	reverse_proxy localhost:3000
+}
+<my_server_url> {
+	tls <my_server_url>+3.pem <my_server_url>+3-key.pem
+	reverse_proxy localhost:8000
+}
+```
 
 ```bash
 cd ./reverse-proxy  

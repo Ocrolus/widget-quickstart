@@ -42,7 +42,8 @@ function getUserExternalId(userId) {
 }
 
 app.post('/token', function (request, response) {
-    return getUserExternalId(request.headers.authorization).then(userId => {
+    const user_token = request.headers.authorization || 1234
+    return getUserExternalId(user_token).then(userId => {
         return issuer('/token', {
             client_id: OCROLUS_CLIENT_ID,
             client_secret: OCROLUS_CLIENT_SECRET,
