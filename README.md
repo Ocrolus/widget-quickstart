@@ -15,15 +15,15 @@ This repository is meant to demonstrate a simplified environment running the Ocr
     - [Default Caddyfile](#default-caddyfile)
     - [Default Routing](#default-routing)
 - [4. Run the quickstart](#4-run-the-quickstart)
+  - [Run with Docker](#run-with-docker)
+    - [Pre-requisites](#pre-requisites-1)
+    - [Running](#running)
   - [Run without Docker](#run-without-docker)
     - [Pre-requisites](#pre-requisites)
     - [1. Initializing the certs and dependencies](#1-initializing-the-certs-and-dependencies)
     - [2. Running the backend](#2-running-the-backend)
       - [Node](#node)
     - [3. Running the frontend](#3-running-the-frontend)
-  - [Run with Docker](#run-with-docker)
-    - [Pre-requisites](#pre-requisites-1)
-    - [Running](#running)
   - [Custom Configuration](#custom-configuration)
     - [Custom Dashboard](#custom-dashboard)
     - [Custom Caddyfile](#custom-caddyfile)
@@ -83,6 +83,23 @@ Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` re
 ```
 
 ## 4. Run the quickstart
+
+### Run with Docker
+
+#### Pre-requisites
+
+- `make` available in command line 
+- Docker installed and running [installation](https://docs.docker.com/get-docker/)
+- Your `.env` variables initialized
+
+#### Running
+
+There are two `make` commands relative to running with docker.
+
+`make rebuild_docker` Which will rebuild and run the docker containers.
+`make run_docker` Which will do a cached, if possible, build and run the docker containers
+
+`make rebuild_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
 
 ### Run without Docker
 
@@ -147,23 +164,6 @@ $ npm start
 ```
 
 alternatively `make run_frontend`
-
-### Run with Docker
-
-#### Pre-requisites
-
-- `make` available in command line 
-- Docker installed and running [installation](https://docs.docker.com/get-docker/)
-- Your `.env` variables initialized
-
-#### Running
-
-There are two `make` commands relative to running with docker.
-
-`make rebuild_docker` Which will rebuild and run the docker containers.
-`make run_docker` Which will do a cached, if possible, build and run the docker containers
-
-`make rebuild_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
 
 ### Custom Configuration
 **Only follow this set of steps if you're looking to use a custom URL for your example app.**
