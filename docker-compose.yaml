@@ -6,6 +6,18 @@ x-environment:
   OCROLUS_CLIENT_ID: ${OCROLUS_CLIENT_ID}
   OCROLUS_CLIENT_SECRET: ${OCROLUS_CLIENT_SECRET}
 services:
+  ngrok:
+    networks:
+      - "quickstart"
+    build:
+      context: .
+      dockerfile: ./node/webhook.Dockerfile
+    ports:
+      - 4040:4040
+    depends_on:
+      - "node"
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
   caddy:
     networks:
       - "quickstart"

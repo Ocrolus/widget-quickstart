@@ -38,3 +38,11 @@ run_docker:
 .PHONY: rebuild_docker
 rebuild_docker:
 	docker-compose up --build
+
+.PHONY: rebuild_node
+rebuild_node:
+	docker-compose up node --build
+
+.PHONY: rebuild_frontend
+rebuild_frontend:
+	docker-compose up frontend --build
