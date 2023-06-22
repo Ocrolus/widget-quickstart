@@ -28,6 +28,8 @@ This repository is meant to demonstrate a simplified environment running the Ocr
     - [Custom Dashboard](#custom-dashboard)
     - [Custom Caddyfile](#custom-caddyfile)
     - [Custom Routing](#custom-routing)
+- [5. Optional Webhooks](#5-optinal-webhooks)
+  - [Setting up ngrok](#setting-up-ngrok)
 ## 1. Pull the repository
 
 Using https:
@@ -209,3 +211,22 @@ Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` re
 127.0.0.1 <my_frontend_url>
 127.0.0.1 <my_server_url>
 ```
+
+## 5. Optional Webhooks
+Webhooks are a pattern to be notified of events within the ocrolus system. Lenders may want to download the file data that is uploaded through the widget as it bypasses the lender source data may need to be stored in some properietary manner to the lender. As such Webhooks and the `/v2/document/download` endpoint on the ocrolus API can be leveraged to get resources in any other system programatically. 
+
+### Setting Up The Webhook for Running
+The quickstart leverages `ngrok` to create a URL available to the wider internet and Ocrolus that points at the local server. To get started [Sign up with ngrok](https://dashboard.ngrok.com/get-started/your-authtoken) and get an auth token. Make a local copy of the `ngrok-example.yml` file rename it `ngrok.yml` and paste your auth token inside the authtoken field.
+
+Ngrok will now get launched with the typical `make run_docker` command. Once the ngrok container has been launched there will be log output from the `widget-quickstart-ngrok-1` pod akin to the following:
+
+```bash
+widget-quickstart-ngrok-1     | t=2023-06-22T17:07:21+0000 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://node:8000 url=https://5264-104-28-236-176.ngrok-free.app
+```
+
+Copy this URL and navigate a browser to the dashboard and create a webhook with this ngrok url as the outbound URL. Steps to set up the webhook in dashboard can be found [here](https://docs.ocrolus.com/docs/configure-and-manage). The event that needs to be enabled is `document.verification_succeeded`.
+
+**Note**
+Due to the drawbacks of the free version of ngrok a new URL will be generated each time so every time the ngrok server is restarted, killed, and run again a new URL will be generated. The webhook to be used will need to be updated with this outbound url. As such if local changes are desired to be made within this widget example the commands `rebuild_node` and `rebuild_frontend` are preferrable to a full rebuild or rerun of the docker containers.
+
+Now whenever a document is verified, the local server will be notified via webhook that a document is ready for download and downloaded to the local docker container. Logically in a production scenario this would be specified by the implementer to download the document to whatever desired file system that is specified.

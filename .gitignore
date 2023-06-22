@@ -1,3 +1,4 @@
 /.env
+ngrok.yml
 .DS_Store
 *.pem
