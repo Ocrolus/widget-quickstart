@@ -227,6 +227,6 @@ widget-quickstart-ngrok-1     | t=2023-06-22T17:07:21+0000 lvl=info msg="started
 Copy this URL and navigate a browser to the dashboard and create a webhook with this ngrok url as the outbound URL. Steps to set up the webhook in dashboard can be found [here](https://docs.ocrolus.com/docs/configure-and-manage). The event that needs to be enabled is `document.verification_succeeded`.
 
 **Note**
-Due to the drawbacks of the free version of ngrok a new URL will be generated each time so every time the ngrok server is restarted, killed, and run again a new URL will be generated. The webhook to be used will need to be updated with this outbound url. 
+Due to the drawbacks of the free version of ngrok a new URL will be generated each time so every time the ngrok server is restarted, killed, and run again a new URL will be generated. The webhook to be used will need to be updated with this outbound url. As such if local changes are desired to be made within this widget example the commands `rebuild_node` and `rebuild_frontend` are preferrable to a full rebuild or rerun of the docker containers.
 
 Now whenever a document is verified, the local server will be notified via webhook that a document is ready for download and downloaded to the local docker container. Logically in a production scenario this would be specified by the implementer to download the document to whatever desired file system that is specified.
