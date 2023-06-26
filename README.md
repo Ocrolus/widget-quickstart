@@ -61,6 +61,8 @@ cp .env.example .env
 
 Copy `.env.example` to a new file called `.env`. `OCROLUS_CLIENT_ID`, `OCROLUS_CLIENT_SECRET`, `ENVIRONMENT` must all be set. Get your Client ID and secrets from the dashboard: https://dashboard-demo.ocrolus.com/settings/widgets.
 
+Open `/frontend/public/index.html` and delete the example snippet code on line 47 and paste the widget snippet code from the dashboard website on that line 47.
+
 ## 3. Global Prerequisites
 
 ### Mkcert
