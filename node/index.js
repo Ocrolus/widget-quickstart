@@ -36,7 +36,7 @@ const downloadOcrolus =  (method, token) => bent(`${OCROLUS_API}`, method, 'buff
 
 const TOKEN_ISSUER_URLS = {
     development: 'https://jwt-issuer.demo.ocrolus.net',
-    production: 'https://authn.ocrolus.net',
+    production: 'https://authn.ocrolus.com',
 }
 
 const API_ISSUER_URLS = {
@@ -81,7 +81,7 @@ app.post('/token', function (request, response) {
         return issuer('/widget/token', {
             client_id: OCROLUS_CLIENT_ID,
             client_secret: OCROLUS_CLIENT_SECRET,
-            external_id: userId,
+            custom_id: userId,
             grant_type: 'client_credentials',
             name: 'Widget Book',
         }).then(token_response => {
