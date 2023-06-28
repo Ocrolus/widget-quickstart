@@ -83,7 +83,7 @@ app.post('/token', function (request, response) {
             client_secret: OCROLUS_CLIENT_SECRET,
             custom_id: userId,
             grant_type: 'client_credentials',
-            name: 'Widget Book',
+            book_name: 'Widget Book',
         }).then(token_response => {
             const token = token_response.access_token
 
