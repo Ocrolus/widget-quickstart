@@ -35,8 +35,8 @@ const ocrolusBent =  (method, token) => bent(`${OCROLUS_API}`, method, 'json', {
 const downloadOcrolus =  (method, token) => bent(`${OCROLUS_API}`, method, 'buffer', { authorization: `Bearer ${token}`})
 
 const TOKEN_ISSUER_URLS = {
-    development: 'https://jwe-issuer.demo.ocrolus.net',
-    production: 'https://jwe-issuer.ocrolus.net',
+    development: 'https://jwt-issuer.demo.ocrolus.net',
+    production: 'https://authn.ocrolus.com',
 }
 
 const API_ISSUER_URLS = {
@@ -78,12 +78,12 @@ app.post('/token', function (request, response) {
     const user_token = request.headers.authorization || 1234
 
     return getUserExternalId(user_token).then(userId => {
-        return issuer('/token', {
+        return issuer('/widget/token', {
             client_id: OCROLUS_CLIENT_ID,
             client_secret: OCROLUS_CLIENT_SECRET,
-            external_id: userId,
+            custom_id: userId,
             grant_type: 'client_credentials',
-            name: 'Widget Book',
+            book_name: 'Widget Book',
         }).then(token_response => {
             const token = token_response.access_token
 
