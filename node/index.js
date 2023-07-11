@@ -20,7 +20,11 @@ if (!OCROLUS_CLIENT_ID && !OCROLUS_CLIENT_SECRET) {
 
 const DOCUMENT_READY = 'document.verification_succeeded'
 const WIDGET_BOOK_TYPE = 'WIDGET'
-const OCROLUS_API = "https://api-demo.ocrolus.com"
+const OCROLUS_API_URLS = {
+    development: "https://api-demo.ocrolus.com",
+    production: "https://api.ocrolus.com"
+}
+
 const OCROLUS_IP_ALLOWLIST = [
     '18.205.30.63',
     '18.208.79.114',
@@ -31,8 +35,7 @@ const OCROLUS_IP_ALLOWLIST = [
     '54.164.238.206',
 ]
 
-const ocrolusBent =  (method, token) => bent(`${OCROLUS_API}`, method, 'json', { authorization: `Bearer ${token}`})
-const downloadOcrolus =  (method, token) => bent(`${OCROLUS_API}`, method, 'buffer', { authorization: `Bearer ${token}`})
+
 
 const TOKEN_ISSUER_URLS = {
     development: 'https://jwt-issuer.demo.ocrolus.net',
@@ -46,6 +49,10 @@ const API_ISSUER_URLS = {
 
 const token_issuer = TOKEN_ISSUER_URLS[ENV]
 const auth_issuer = API_ISSUER_URLS[ENV]
+const OCROLUS_API = OCROLUS_API_URLS[ENV]
+
+const ocrolusBent =  (method, token) => bent(`${OCROLUS_API}`, method, 'json', { authorization: `Bearer ${token}`})
+const downloadOcrolus =  (method, token) => bent(`${OCROLUS_API}`, method, 'buffer', { authorization: `Bearer ${token}`})
 
 if (!token_issuer) {
     throw Error(`Unable to initialize environment ${ENV}. Missing Issuer URL for environment level.`)
