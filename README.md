@@ -68,6 +68,11 @@ Open `/frontend/public/index.html` and delete the example snippet code on line 4
 ### Mkcert
 Install `mkcert` [how-to](https://github.com/FiloSottile/mkcert#installation). This is a global pre-requisite as the development certificate to be trusted locally via your browser it needs to be executed in the browser's executing environment.
 
+Generate and install new CA root certificate using `mkcert`
+```sh
+mkcert -install
+```
+
 ### Default Configuration
 
 #### Default Dashboard
