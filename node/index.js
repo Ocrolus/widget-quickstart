@@ -8,7 +8,7 @@ const bodyParser = require('body-parser')
 const { writeFile } = require('fs/promises')
 
 const PORT = process.env.APP_PORT || 8000
-const ENV = process.env.OCROLUS_WIDGET_ENVIRONMENT || 'development'
+const ENV = process.env.OCROLUS_WIDGET_ENVIRONMENT || 'production'
 const OCROLUS_CLIENT_ID = process.env.OCROLUS_CLIENT_ID
 const OCROLUS_CLIENT_SECRET = process.env.OCROLUS_CLIENT_SECRET
 
@@ -21,7 +21,6 @@ if (!OCROLUS_CLIENT_ID && !OCROLUS_CLIENT_SECRET) {
 const DOCUMENT_READY = 'document.verification_succeeded'
 const WIDGET_BOOK_TYPE = 'WIDGET'
 const OCROLUS_API_URLS = {
-    development: "https://api-demo.ocrolus.com",
     production: "https://api.ocrolus.com"
 }
 
@@ -38,12 +37,10 @@ const OCROLUS_IP_ALLOWLIST = [
 
 
 const TOKEN_ISSUER_URLS = {
-    development: 'https://jwt-issuer.demo.ocrolus.net',
     production: 'https://authn.ocrolus.com',
 }
 
 const API_ISSUER_URLS = {
-    development: 'https://auth-demo.ocrolus.com',
     production: 'https://auth.ocrolus.com',
 }
 
