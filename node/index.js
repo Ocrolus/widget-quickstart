@@ -11,6 +11,7 @@ const PORT = process.env.APP_PORT || 8000
 const ENV = process.env.OCROLUS_WIDGET_ENVIRONMENT || 'development'
 const OCROLUS_CLIENT_ID = process.env.OCROLUS_CLIENT_ID
 const OCROLUS_CLIENT_SECRET = process.env.OCROLUS_CLIENT_SECRET
+const OCROLUS_WIDGET_UUID = process.env.OCROLUS_WIDGET_UUID
 
 if (!OCROLUS_CLIENT_ID && !OCROLUS_CLIENT_SECRET) {
     throw Error(
@@ -35,12 +36,10 @@ const ocrolusBent =  (method, token) => bent(`${OCROLUS_API}`, method, 'json', {
 const downloadOcrolus =  (method, token) => bent(`${OCROLUS_API}`, method, 'buffer', { authorization: `Bearer ${token}`})
 
 const TOKEN_ISSUER_URLS = {
-    development: 'https://jwe-issuer.demo.ocrolus.net',
-    production: 'https://jwe-issuer.ocrolus.net',
+    production: 'https://widget.ocrolus.com',
 }
 
 const API_ISSUER_URLS = {
-    development: 'https://auth-demo.ocrolus.com',
     production: 'https://auth.ocrolus.com',
 }
 
@@ -78,7 +77,11 @@ app.post('/token', function (request, response) {
     const user_token = request.headers.authorization || 1234
 
     return getUserExternalId(user_token).then(userId => {
+<<<<<<< HEAD
         return issuer('/token', {
+=======
+        return issuer(`/v1/widget/${widget_uuid}/token`, {
+>>>>>>> 4a9b3ac (chore: add php example)
             client_id: OCROLUS_CLIENT_ID,
             client_secret: OCROLUS_CLIENT_SECRET,
             external_id: userId,

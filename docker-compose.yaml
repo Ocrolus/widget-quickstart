@@ -5,6 +5,7 @@ x-environment:
   OCROLUS_WIDGET_ENVIRONMENT: ${OCROLUS_WIDGET_ENVIRONMENT}
   OCROLUS_CLIENT_ID: ${OCROLUS_CLIENT_ID}
   OCROLUS_CLIENT_SECRET: ${OCROLUS_CLIENT_SECRET}
+  OCROLUS_WIDGET_UUID: ${OCROLUS_WIDGET_UUID}
 services:
   ngrok:
     networks:
@@ -38,6 +39,16 @@ services:
       dockerfile: ./node/Dockerfile
     ports:
       - 8000
+    environment:
+      <<: *WIDGET_ENVIRONMENT
+  php:
+    networks:
+        - "quickstart"
+    build:
+      context: .
+      dockerfile: ./php/Dockerfile
+    ports:
+      - "8001:8001"
     environment:
       <<: *WIDGET_ENVIRONMENT
   frontend:
