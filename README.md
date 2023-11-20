@@ -15,15 +15,15 @@ This repository is meant to demonstrate a simplified environment running the Ocr
     - [Default Caddyfile](#default-caddyfile)
     - [Default Routing](#default-routing)
 - [4. Run the quickstart](#4-run-the-quickstart)
+  - [Run with Docker](#run-with-docker)
+    - [Pre-requisites](#pre-requisites-1)
+    - [Running](#running)
   - [Run without Docker](#run-without-docker)
     - [Pre-requisites](#pre-requisites)
     - [1. Initializing the certs and dependencies](#1-initializing-the-certs-and-dependencies)
     - [2. Running the backend](#2-running-the-backend)
       - [Node](#node)
     - [3. Running the frontend](#3-running-the-frontend)
-  - [Run with Docker](#run-with-docker)
-    - [Pre-requisites](#pre-requisites-1)
-    - [Running](#running)
   - [Custom Configuration](#custom-configuration)
     - [Custom Dashboard](#custom-dashboard)
     - [Custom Caddyfile](#custom-caddyfile)
@@ -59,12 +59,19 @@ git clone -c core.symlinks=true https://github.com/Ocrolus/widget-quickstart
 cp .env.example .env
 ```
 
-Copy `.env.example` to a new file called `.env`. `OCROLUS_CLIENT_ID`, `OCROLUS_CLIENT_SECRET`, `ENVIRONMENT` must all be set. Get your Client ID and secrets from the dashboard: https://dashboard-demo.ocrolus.com/settings/widgets.
+Copy `.env.example` to a new file called `.env`. `OCROLUS_CLIENT_ID`, `OCROLUS_CLIENT_SECRET`, `ENVIRONMENT` must all be set. Get your Client ID and secrets from the dashboard: https://dashboard.ocrolus.com/settings/widgets.
+
+Open `/frontend/public/index.html` and delete the example snippet code on line 47 and paste the widget snippet code from the dashboard website on that line 47.
 
 ## 3. Global Prerequisites
 
 ### Mkcert
 Install `mkcert` [how-to](https://github.com/FiloSottile/mkcert#installation). This is a global pre-requisite as the development certificate to be trusted locally via your browser it needs to be executed in the browser's executing environment.
+
+Generate and install new CA root certificate using `mkcert`
+```sh
+mkcert -install
+```
 
 ### Default Configuration
 
@@ -85,6 +92,25 @@ Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` re
 ```
 
 ## 4. Run the quickstart
+
+### Run with Docker
+
+#### Pre-requisites
+
+- `make` available in command line 
+- Docker installed and running [installation](https://docs.docker.com/get-docker/)
+- Your `.env` variables initialized
+
+#### Running
+
+There are two `make` commands relative to running with docker.
+
+`make rebuild_docker` Which will rebuild and run the docker containers.
+`make run_docker` Which will do a cached, if possible, build and run the docker containers
+
+`make rebuild_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
+
+This will run both the `node` and `php` instances at port 8000 and 8001 respectively. In order to switch which backend you want to use augment the routing in your caddyfile to point to `php:8001`
 
 ### Run without Docker
 
@@ -157,25 +183,6 @@ $ npm start
 
 alternatively `make run_frontend`
 
-### Run with Docker
-
-#### Pre-requisites
-
-- `make` available in command line 
-- Docker installed and running [installation](https://docs.docker.com/get-docker/)
-- Your `.env` variables initialized
-
-#### Running
-
-There are two `make` commands relative to running with docker.
-
-`make rebuild_docker` Which will rebuild and run the docker containers.
-`make run_docker` Which will do a cached, if possible, build and run the docker containers
-
-`make rebuild_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
-
-This will run both the `node` and `php` instances at port 8000 and 8001 respectively. In order to switch which backend you want to use augment the routing in your caddyfile to point to `php:8001`
-
 ### Custom Configuration
 **Only follow this set of steps if you're looking to use a custom URL for your example app.**
 
@@ -236,6 +243,6 @@ widget-quickstart-ngrok-1     | t=2023-06-22T17:07:21+0000 lvl=info msg="started
 Copy this URL and navigate a browser to the dashboard and create a webhook with this ngrok url as the outbound URL. Steps to set up the webhook in dashboard can be found [here](https://docs.ocrolus.com/docs/configure-and-manage). The event that needs to be enabled is `document.verification_succeeded`.
 
 **Note**
-Due to the drawbacks of the free version of ngrok a new URL will be generated each time so every time the ngrok server is restarted, killed, and run again a new URL will be generated. The webhook to be used will need to be updated with this outbound url. 
+Due to the drawbacks of the free version of ngrok a new URL will be generated each time so every time the ngrok server is restarted, killed, and run again a new URL will be generated. The webhook to be used will need to be updated with this outbound url. As such if local changes are desired to be made within this widget example the commands `rebuild_node` and `rebuild_frontend` are preferrable to a full rebuild or rerun of the docker containers.
 
 Now whenever a document is verified, the local server will be notified via webhook that a document is ready for download and downloaded to the local docker container. Logically in a production scenario this would be specified by the implementer to download the document to whatever desired file system that is specified.
