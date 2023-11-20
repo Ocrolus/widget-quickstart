@@ -128,6 +128,13 @@ Install all dependencies via `make install_all`
 
 Once executing with one of the commands below the backend will be running on http://localhost:8000. This backend should represent your customer server.
 
+##### PHP
+
+```bash
+$ cd ./php
+$ composer install --working-dir=php
+$ php -S localhost:8001 -t public
+```
 
 ##### Node
 
@@ -166,6 +173,8 @@ There are two `make` commands relative to running with docker.
 `make run_docker` Which will do a cached, if possible, build and run the docker containers
 
 `make rebuild_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
+
+This will run both the `node` and `php` instances at port 8000 and 8001 respectively. In order to switch which backend you want to use augment the routing in your caddyfile to point to `php:8001`
 
 ### Custom Configuration
 **Only follow this set of steps if you're looking to use a custom URL for your example app.**
