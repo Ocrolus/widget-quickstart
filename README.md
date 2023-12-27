@@ -4,6 +4,139 @@ This repository is meant to demonstrate a simplified environment running the Ocr
 
 ![Ocrolus Widget quickstart](/sample.png)
 
+## Widget Interfaces and Responses
+
+At a high level to integrate the widget one must implement a couple of interfaces to get the base functionality, there's extra interfaces for extended functionality.
+
+### Base Functionality
+
+First a backend server must be set up with the widget credentials generated at [widget creation in the dashboard](dashboard.ocrolus.com/settings/widgets). Set up a back end server, examples can be found in the [node](/node/index.js) or [php](/php/routes/web.php).
+
+As seen in the examples, an endpoint we'll call `/my_token` must be set up. This should be an endpoint visible to the internet, ideally behind some level of customer authentication, as the token coming back from this endpoint will be used to upload files to your ocrolus account. In that endpoint write code leveraging the `WIDGET_CLIENT_ID` and `WIDGET_CLIENT_SECRET` we will call the [widget token endpoint](#widget-token-request) found in the [endpoints section](#endpoints) and return the `access_token` value.
+
+Second within the website where the widget will be embedded a global function `getAuthToken`. This method should make an HTTP request to our previously set up `/my_token` endpoint and return the access_token from our endpoint [exemplified here](/frontend/src/App.tsx) lines 9-13.
+
+This completes the base upload functionality of the widget.
+
+### Extended Functionality
+
+There's a second set of interfaces to implement for the reingestion flow of documents back into a lender's system. This flow outlines how to get documents uploaded directly to Ocrolus via the widget back into a the file system owned by the lender (you).
+
+First set up an endpoint for handling Ocrolus webhooks we'll call this `/handler`. Expose this to the internet on our back end server from the previous step, be aware of the risks associated with handling any request sent to this endpoint be sure to take common sense precautions. The handler then needs to handle the `document.verification_succeeded` event from Ocrolus. Go to dashboard.ocrolus.com/settings/webhooks and set up a new webhook pointing to `https://www.yourwebsite.com/handler` and make sure the webhook is sending `document.verification_succeeded` events. Inside the code of our `/handler` endpoint we need to do a few things:
+1. Filter all non verification_succeeded events. Validate that this is a document from a widget book.
+    1. if your company doesn't use the xid value on book creation endpoint you could check for non-null value for book.xid.
+    2. if your company leverages the xid field then you'll need to use some logic to determine whether this is a document you want to download. To do this you could leverage whether book_type is equal to 'WIDGET' or if you have a dictionary of xids you've used in the past you can look at the xid on the book. This requires a token from the [ocrolus token endpoint](#ocrolus-token-request) and a request to the [book endpoint](#ocrolus-book-request) with the access_token.
+2. Once we find a verification_succeeded event we need to send a request to to the [ocrolus token endpoint](#ocrolus-token-request)
+3. We then use the token from the ocrolus token endpoint, then we can make a document download request to the [document download endpoint](#document-request). Then write the file to the lender's file system.
+
+### Endpoints
+#### Widget Token Request
+https://widget.ocrolus.com/v1/widget/${WIDGET_UUID}/token
+```javascript
+{
+  client_id: WIDGET_CLIENT_ID,
+  client_secret: WIDGET_CLIENT_SECRET,
+  custom_id: YOUR_CUSTOM_ID_VALUE,
+  grant_type: 'client_credentials',
+  book_name: YOUR_CUSTOM_BOOK_NAME,
+}
+```
+
+Widget Token Response
+```javascript
+{
+  "access_token": JWT_TOKEN,
+  "expires_in": NUMBER_OF_MILLISECONDS,
+  "token_type": 'Bearer'
+}
+```
+
+#### Ocrolus Token Request
+https://auth.ocrolus.com/oauth/token
+
+```javascript
+{
+  client_id: WIDGET_CLIENT_ID,
+  client_secret: WIDGET_CLIENT_SECRET,
+  grant_type: 'client_credentials',
+}
+```
+
+Ocrolus Token Response
+```javascript
+{ 
+  "access_token": JWT_TOKEN,
+  "token_type": 'Bearer',
+  "expires_in": NUMBER_OF_MILLISECONDS,
+}
+```
+
+#### Ocrolus Book Request
+
+```
+GET https://api.ocrolus.com/v1/book/info?book_uuid=${BOOK_UUID}
+```
+
+Ocrolus Book Request
+```javascript
+ {
+  status: 200,
+  response: {
+    name: 'Widget Book',
+    created: '2023-11-20T18:52:07Z',
+    created_ts: '2023-11-20T18:52:07Z',
+    pk: 41970113,
+    owner_email: 'EMAIL_OF_BOOK_CREATOR',
+    is_public: true,
+    book_uuid: '67234233-f8ae-4345-9f7a-cb80509540df4',
+    xid: YOUR_CUSTOM_ID_VALUE,
+    book_type: 'WIDGET',
+    id: 41970113,
+    is_shared_or_public_book: true,
+    docs: [ [DOCUMENT_DATA_OBJECT], ],
+    mixed_docs: [ [DOCUMENT_DATA_OBJECT], ],
+    bank_accounts: { '162222119': [BANK_ACCOUNT_DATA_OBJECT] },
+    custom_filters: {},
+    status_tags: { '2386333': [Object], '2386480': [Object] },
+    book_class: 'INSTANT'
+  },
+  message: 'OK'
+}
+```
+
+#### Document Request
+
+```javascript
+GET https://api.ocrolus.com/v2/document/download?doc_uuid=${YOUR_DOC_UUID}
+```
+
+Document Response
+```javascript
+<Buffer 25 50 44 46 2d 31 2e 33 0a 25 93 8c 8b 9e 20 52 65 70 6f 72 74 4c 61 62 20 47 65 6e 65 72 61 74 65 64 20 50 44 46 20 64 6f 63 75 6d 65 6e 74 20 68 74 ... 891313 more bytes>
+```
+
+#### Webhook Example
+
+```javascript
+{
+  mixed_uploaded_doc_pk: 8458742,
+  book_pk: 98871,
+  uploaded_image_group_uuid: null,
+  status: 'VERIFICATION_COMPLETE',
+  mixed_uploaded_doc_uuid: 'e7e35a16-0240-4c46-a290-7f0ad933f93e',
+  notification_reason: 'Document verified',
+  book_uuid: 'fc8f9719-0089-44f1-b2hf-053320239930',
+  uploaded_doc_uuid: '06bdw77de-e97l-22f8-vzdd-a710447c4ed5',
+  event_name: 'document.verification_succeeded',
+  notification_type: 'STATUS',
+  doc_uuid: '06gh45dh-o83v-86v8-vvvv-v713347b5ed5',
+  severity: 'LOW',
+  uploaded_image_group_pk: null,
+  uploaded_doc_pk: 64241242
+}
+```
+
+## Setting Up The Example Site
 
 - [1. Pull the repository](#1-pull-the-repository)
   - [Note for Windows](#note-for-windows)
