@@ -80,7 +80,7 @@ https://widget.ocrolus.com/v1/widget/${WIDGET_UUID}/token
   client_secret: WIDGET_CLIENT_SECRET,
   custom_id: YOUR_CUSTOM_ID_VALUE,
   grant_type: 'client_credentials',
-  book_name: YOUR_CUSTOM_BOOK_NAME,
+  book_name: YOUR_CUSTOM_BOOK_NAME, // This is for your purposes. This value can be anything and is the way you'll be able to find these books later inside the dashboard. So name it something meaningful to your organization
 }
 ```
 
