@@ -8,21 +8,23 @@ This repository is meant to demonstrate a simplified environment running the Ocr
 
 At a high level to integrate the widget one must implement a couple of interfaces to get the base functionality, there's extra interfaces for extended functionality.
 
-### Base Functionality
+![Ocrolus Widget quickstart](/interfaces.png)
 
-First a backend server must be set up with the widget credentials generated at [widget creation in the dashboard](dashboard.ocrolus.com/settings/widgets). Set up a back end server, examples can be found in the [node](/node/index.js) or [php](/php/routes/web.php).
+### Base Functionality For Upload
+
+First a backend server must be set up with the widget credentials generated at [widget creation in the dashboard](https://dashboard.ocrolus.com/settings/widgets). Set up a back end server, prefabricated back end server examples can be found in the [node](/node/index.js) or [php](/php/routes/web.php).
 
 As seen in the examples, an endpoint we'll call `/my_token` must be set up. This should be an endpoint visible to the internet, ideally behind some level of customer authentication, as the token coming back from this endpoint will be used to upload files to your ocrolus account. In that endpoint write code leveraging the `WIDGET_CLIENT_ID` and `WIDGET_CLIENT_SECRET` we will call the [widget token endpoint](#widget-token-request) found in the [endpoints section](#endpoints) and return the `access_token` value.
 
-Second within the website where the widget will be embedded a global function `getAuthToken`. This method should make an HTTP request to our previously set up `/my_token` endpoint and return the access_token from our endpoint [exemplified here](/frontend/src/App.tsx) lines 9-13.
+Second within the website where the widget will be embedded set a global function `getAuthToken` on the window object. This method should make an HTTP request to our previously set up `/my_token` endpoint and return the access_token from our endpoint [exemplified here](/frontend/src/App.tsx) lines 9-13.
 
-This completes the base upload functionality of the widget.
+Paste the widget initializer code snippet from the widget creation screen and that completes the setup for the base widget functionality
 
 ### Extended Functionality
 
 There's a second set of interfaces to implement for the reingestion flow of documents back into a lender's system. This flow outlines how to get documents uploaded directly to Ocrolus via the widget back into a the file system owned by the lender (you).
 
-First set up an endpoint for handling Ocrolus webhooks we'll call this `/handler`. Expose this to the internet on our back end server from the previous step, be aware of the risks associated with handling any request sent to this endpoint be sure to take common sense precautions. The handler then needs to handle the `document.verification_succeeded` event from Ocrolus. Go to dashboard.ocrolus.com/settings/webhooks and set up a new webhook pointing to `https://www.yourwebsite.com/handler` and make sure the webhook is sending `document.verification_succeeded` events. Inside the code of our `/handler` endpoint we need to do a few things:
+First set up an endpoint for handling Ocrolus webhooks we'll call this `/handler`. Expose this to the internet on our back end server from the previous step, be aware of the risks associated with handling any request sent to this endpoint be sure to take common sense precautions. The handler then needs to handle the `document.verification_succeeded` event from Ocrolus. Go to https://dashboard.ocrolus.com/settings/webhooks and set up a new webhook pointing to `https://www.yourwebsite.com/handler` and make sure the webhook is sending `document.verification_succeeded` events. Inside the code of our `/handler` endpoint we need to do a few things:
 1. Filter all non verification_succeeded events. Validate that this is a document from a widget book.
     1. if your company doesn't use the xid value on book creation endpoint you could check for non-null value for book.xid.
     2. if your company leverages the xid field then you'll need to use some logic to determine whether this is a document you want to download. To do this you could leverage whether book_type is equal to 'WIDGET' or if you have a dictionary of xids you've used in the past you can look at the xid on the book. This requires a token from the [ocrolus token endpoint](#ocrolus-token-request) and a request to the [book endpoint](#ocrolus-book-request) with the access_token.
