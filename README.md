@@ -4,7 +4,47 @@ This repository is meant to demonstrate a simplified environment running the Ocr
 
 ![Ocrolus Widget quickstart](/sample.png)
 
-## Widget Interfaces and Responses
+# Table of Contents
+- [Implementing the Widget](#implementing-widget-in-a-site)
+  - [Widget Interfaces](#widget-interfaces)
+    - [Base Functionality](#base-functionality-for-upload)
+    - [Extended Functionality](#extended-functionality)
+    - [Endpoints and Responses](#endpoints-and-responses)
+      - [Widget Token](#widget-token-request)
+      - [Ocrolus Token](#ocrolus-token-request) 
+      - [Ocrolus Book](#ocrolus-book-request)
+      - [Document](#document-request)
+      - [Webhook](#webhook-example)
+- [Setting up Example Sites](#setting-up-the-example-site)
+  - [1. Pull the repository](#1-pull-the-repository)
+    - [Note for Windows](#note-for-windows)
+  - [2. Set up widget environment variables](#2-set-up-widget-environment-variables)
+  - [3. Global prerequisites](#3-global-prerequisites)
+    - [MKcert](#MKcert)
+    - [Default Configuration](#default-configuration)
+      - [Default Dashboard](#default-dashboard)
+      - [Default Caddyfile](#default-caddyfile)
+      - [Default Routing](#default-routing)
+  - [4. Run the quickstart](#4-run-the-quickstart)
+    - [Run with Docker](#run-with-docker)
+      - [Pre-requisites](#pre-requisites-1)
+      - [Running](#running)
+    - [Run without Docker](#run-without-docker)
+      - [Pre-requisites](#pre-requisites)
+      - [1. Initializing the certs and dependencies](#1-initializing-the-certs-and-dependencies)
+      - [2. Running the backend](#2-running-the-backend)
+        - [Node](#node)
+      - [3. Running the frontend](#3-running-the-frontend)
+    - [Custom Configuration](#custom-configuration)
+      - [Custom Dashboard](#custom-dashboard)
+      - [Custom Caddyfile](#custom-caddyfile)
+      - [Custom Routing](#custom-routing)
+  - [5. Optional Webhooks](#5-optinal-webhooks)
+    - [Setting up ngrok](#setting-up-ngrok)
+
+# Implementing Widget in a Site
+
+## Widget Interfaces
 
 At a high level to integrate the widget one must implement a couple of interfaces to get the base functionality, there's extra interfaces for extended functionality.
 
@@ -14,7 +54,7 @@ At a high level to integrate the widget one must implement a couple of interface
 
 First a backend server must be set up with the widget credentials generated at [widget creation in the dashboard](https://dashboard.ocrolus.com/settings/widgets). Set up a back end server, prefabricated back end server examples can be found in the [node](/node/index.js) or [php](/php/routes/web.php).
 
-As seen in the examples, an endpoint we'll call `/my_token` must be set up. This should be an endpoint visible to the internet, ideally behind some level of customer authentication, as the token coming back from this endpoint will be used to upload files to your ocrolus account. In that endpoint write code leveraging the `WIDGET_CLIENT_ID` and `WIDGET_CLIENT_SECRET` we will call the [widget token endpoint](#widget-token-request) found in the [endpoints section](#endpoints) and return the `access_token` value.
+As seen in the examples, an endpoint we'll call `/my_token` must be set up. This should be an endpoint visible to the internet, ideally behind some level of customer authentication, as the token coming back from this endpoint will be used to upload files to your ocrolus account. In that endpoint write code leveraging the `WIDGET_CLIENT_ID` and `WIDGET_CLIENT_SECRET` we will call the [widget token endpoint](#widget-token-request) found in the [endpoints section](#endpoints-and-responses) and return the `access_token` value.
 
 Second within the website where the widget will be embedded set a global function `getAuthToken` on the window object. This method should make an HTTP request to our previously set up `/my_token` endpoint and return the access_token from our endpoint [exemplified here](/frontend/src/App.tsx) lines 9-13.
 
@@ -31,7 +71,7 @@ First set up an endpoint for handling Ocrolus webhooks we'll call this `/handler
 2. Once we find a verification_succeeded event we need to send a request to to the [ocrolus token endpoint](#ocrolus-token-request)
 3. We then use the token from the ocrolus token endpoint, then we can make a document download request to the [document download endpoint](#document-request). Then write the file to the lender's file system.
 
-### Endpoints
+### Endpoints and Responses
 #### Widget Token Request
 https://widget.ocrolus.com/v1/widget/${WIDGET_UUID}/token
 ```javascript
@@ -138,33 +178,7 @@ Document Response
 }
 ```
 
-## Setting Up The Example Site
-
-- [1. Pull the repository](#1-pull-the-repository)
-  - [Note for Windows](#note-for-windows)
-- [2. Set up widget environment variables](#2-set-up-widget-environment-variables)
-- [3. Global prerequisites](#3-global-prerequisites)
-  - [MKcert](#MKcert)
-  - [Default Configuration](#default-configuration)
-    - [Default Dashboard](#default-dashboard)
-    - [Default Caddyfile](#default-caddyfile)
-    - [Default Routing](#default-routing)
-- [4. Run the quickstart](#4-run-the-quickstart)
-  - [Run with Docker](#run-with-docker)
-    - [Pre-requisites](#pre-requisites-1)
-    - [Running](#running)
-  - [Run without Docker](#run-without-docker)
-    - [Pre-requisites](#pre-requisites)
-    - [1. Initializing the certs and dependencies](#1-initializing-the-certs-and-dependencies)
-    - [2. Running the backend](#2-running-the-backend)
-      - [Node](#node)
-    - [3. Running the frontend](#3-running-the-frontend)
-  - [Custom Configuration](#custom-configuration)
-    - [Custom Dashboard](#custom-dashboard)
-    - [Custom Caddyfile](#custom-caddyfile)
-    - [Custom Routing](#custom-routing)
-- [5. Optional Webhooks](#5-optinal-webhooks)
-  - [Setting up ngrok](#setting-up-ngrok)
+# Setting Up The Example Site
 ## 1. Pull the repository
 
 Using https:
