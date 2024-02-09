@@ -22,7 +22,7 @@ if (!OCROLUS_CLIENT_ID && !OCROLUS_CLIENT_SECRET) {
 const DOCUMENT_READY = 'document.verification_succeeded'
 const WIDGET_BOOK_TYPE = 'WIDGET'
 const OCROLUS_API_URLS = {
-    production: "https://api.ocrolus.com"
+    production: "https://api-demo.ocrolus.com"
 }
 
 const OCROLUS_IP_ALLOWLIST = [
@@ -38,11 +38,11 @@ const OCROLUS_IP_ALLOWLIST = [
 
 
 const TOKEN_ISSUER_URLS = {
-    production: 'https://widget.ocrolus.com',
+    production: 'https://widget-demo.ocrolus.com',
 }
 
 const API_ISSUER_URLS = {
-    production: 'https://auth.ocrolus.com',
+    production: 'https://auth-demo.ocrolus.com',
 }
 
 const token_issuer = TOKEN_ISSUER_URLS[ENV]
@@ -76,7 +76,7 @@ app.use(cors())
 // purposes this will just mirror back the passed userId
 function getUserExternalId(userId) {
     console.log('hypothetical user lookup', userId)
-    return Promise.resolve('57575576348')
+    return Promise.resolve('Hello')
 }
 
 app.post('/token', function (request, response) {
@@ -92,6 +92,8 @@ app.post('/token', function (request, response) {
         }).then(token_response => {
             const token = token_response.access_token
 
+            console.log(token)
+
             response.json({ accessToken: token })
         })
     })
@@ -101,6 +103,8 @@ app.post('/upload', function(request, response) {
     // Validate allowed IPs
     const sender = request.headers['x-forwarded-for']
     console.log(sender)
+    console.log(request.body)
+    console.log(request.headers)
     if ((OCROLUS_IP_ALLOWLIST.indexOf(sender) === -1)) {
         console.log('ignored sender')
         return response.sendStatus(401)
@@ -116,16 +120,19 @@ app.post('/upload', function(request, response) {
         grant_type: 'client_credentials',
     }).then(token_response => {
         console.log('Downloading document')
+        console.log(token_response)
         const webhookData = request.body
         const { access_token: accessToken } = token_response;
 
         return ocrolusBent("GET", accessToken)(`/v1/book/info?book_uuid=${webhookData.book_uuid}`, undefined).then((bookQueryResp) => {
+            console.log(bookQueryResp)
             const bookData = bookQueryResp.response
             if (bookData.book_type != WIDGET_BOOK_TYPE) {
                 return response.json({})
             }
 
             return downloadOcrolus("GET", accessToken)(`/v2/document/download?doc_uuid=${webhookData.doc_uuid}`).then((doc) => {
+                console.log(doc)
                 console.log('Download of file started')
                 writeFile("ocrolus_document.pdf", doc)
                 response.json({})
