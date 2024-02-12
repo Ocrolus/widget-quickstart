@@ -22,7 +22,14 @@ if (!OCROLUS_CLIENT_ID && !OCROLUS_CLIENT_SECRET) {
 const DOCUMENT_READY = 'document.verification_succeeded'
 const WIDGET_BOOK_TYPE = 'WIDGET'
 const OCROLUS_API_URLS = {
-    production: "https://api-demo.ocrolus.com"
+    production: "https://api.ocrolus.com"
+}
+const TOKEN_ISSUER_URLS = {
+    production: 'https://widget.ocrolus.com',
+}
+
+const API_ISSUER_URLS = {
+    production: 'https://auth.ocrolus.com',
 }
 
 const OCROLUS_IP_ALLOWLIST = [
@@ -34,16 +41,6 @@ const OCROLUS_IP_ALLOWLIST = [
     '35.174.183.80',
     '54.164.238.206',
 ]
-
-
-
-const TOKEN_ISSUER_URLS = {
-    production: 'https://widget-demo.ocrolus.com',
-}
-
-const API_ISSUER_URLS = {
-    production: 'https://auth-demo.ocrolus.com',
-}
 
 const token_issuer = TOKEN_ISSUER_URLS[ENV]
 const auth_issuer = API_ISSUER_URLS[ENV]

@@ -61,6 +61,16 @@ services:
       dockerfile: ./frontend/Dockerfile
     ports: 
       - 3000
+  frontend-react:
+    depends_on:
+      - "node"
+    networks:
+      - "quickstart"
+    build:
+      context: .
+      dockerfile: ./react-widget/Dockerfile
+    ports:
+      - 3001
 networks:
   quickstart:
     name: quickstart
