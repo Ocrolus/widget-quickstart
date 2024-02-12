@@ -19,39 +19,26 @@ function App() {
         cursor: 'pointer',
         '&:hover': {
             color: 'white',
-            backgroundColor: 'primary.main',
+            backgroundColor: 'rgb(71, 89, 226)',
         },
     }
 
     const [options, setOptions] = useState<OcrolusUploadTypes['OcrolusUploadOptions']>({
-        widgetUuid: '0e522c18-ea76-4402-8959-0dd6e6fcfebc',
+        widgetUuid: 'bbdd9bd6-ad86-480f-b0d0-551d1cc0d9ff',
     })
 
     const fetchToken = useCallback(
-        async (widgetUuid: string) => {
-            const body = {
-                grant_type: 'client_credentials',
-                client_id: 'VbvkrO6chFz8IbYcoFtnomAKGaQDlvLM',
-                client_secret: 'nIKMLnKKQZEE1fAkde8AQwMr2BYhr6ZKA7_zT2DhC4X5bEGJlt3SJELl5Bn_nbex',
-                external_id: '8884848',
-                custom_id: 'whatever',
-            }
-            const response = await fetch(`https://widget-demo.ocrolus.com/v1/widget/${widgetUuid}/token`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(body),
-            })
+        async () => {
+            const response = await fetch('https://auth.ocrolusexample.com/token', { method: 'POST' })
             const json = await response.json()
-            //@ts-ignore
-            setOptions(prevOpts => ({ ...prevOpts, token: json.access_token }))
+
+            setOptions((prevOpts: OcrolusUploadTypes['OcrolusUploadOptions']) => ({ ...prevOpts, token: json.accessToken }))
         },
         [setOptions]
     )
     useEffect(() => {
-        fetchToken(options.widgetUuid)
-    }, [options, fetchToken])
+        fetchToken()
+    }, [fetchToken])
 
     const { ready, open } = useWidget(options)
 
@@ -78,7 +65,7 @@ function App() {
                     </Box>
                     <Box sx={moduleProps}>
                         <Box sx={{ marginBottom: '20px' }}> Widget Component</Box>
-                        <OcrolusUpload {...options} loadingElement={<CircularProgress />}>
+                        <OcrolusUpload {...options} loadingElement={() => <CircularProgress />}>
                             <Button sx={buttonStyle}>Launch Widget Component Modal</Button>
                         </OcrolusUpload>
                     </Box>
