@@ -39,8 +39,10 @@ This repository is meant to demonstrate a simplified environment running the Ocr
       - [Custom Dashboard](#custom-dashboard)
       - [Custom Caddyfile](#custom-caddyfile)
       - [Custom Routing](#custom-routing)
-  - [5. Optional Webhooks](#5-optinal-webhooks)
+  - [5. Optional Webhooks](#5-optional-webhooks)
     - [Setting up ngrok](#setting-up-ngrok)
+  - [6. React Example](#6-react-example)
+
 
 # Implementing Widget in a Site
 
@@ -395,3 +397,11 @@ Copy this URL and navigate a browser to the dashboard and create a webhook with 
 Due to the drawbacks of the free version of ngrok a new URL will be generated each time so every time the ngrok server is restarted, killed, and run again a new URL will be generated. The webhook to be used will need to be updated with this outbound url. As such if local changes are desired to be made within this widget example the commands `rebuild_node` and `rebuild_frontend` are preferrable to a full rebuild or rerun of the docker containers.
 
 Now whenever a document is verified, the local server will be notified via webhook that a document is ready for download and downloaded to the local docker container. Logically in a production scenario this would be specified by the implementer to download the document to whatever desired file system that is specified.
+
+
+## 6. React Example
+There is a react built example for Ocrolus widget found in [react example](/react-example). It will naturally build on the docker build or it can be built locally. 
+
+In order to switch the frontend being leveraged in place update [the reverse proxy](/reverse-proxy/Caddyfile) change routing the entry for www.ocrolusexample.com from `frontend:3000` to `frontend-react:3001` and it will switch out the front end module being used. 
+
+Interface and usage examples can be found at [ocrolus-react-widget](https://www.npmjs.com/package/ocrolus-react-widget).
