@@ -47,7 +47,7 @@ function App() {
         }
     }, [fetchToken, tokenCreatedAt])
 
-    // continuous fetching token
+    // pre fetching token
     // const [tokenFetchInterval, setTokenFetchInterval] = useState<NodeJS.Timer>()
     // useEffect(() => {
     //     const now = Date.now()
@@ -74,7 +74,7 @@ function App() {
 
     // Just in time token management will introduce some latency
     const openModal = useCallback(async () => {
-        const fetchTokenBeforeOpen = !tokenCreatedAt || Date.now() - tokenCreatedAt >= 15000
+        const fetchTokenBeforeOpen = !tokenCreatedAt || Date.now() - tokenCreatedAt >= tokenTTL
         if (fetchTokenBeforeOpen) {
             return await fetchToken()
         }
