@@ -5,6 +5,7 @@ import IncomePrompt from 'Components/IncomePrompt'
 import './App.css'
 import Module from 'Components/Module'
 import { useWidget, OcrolusUploadTypes, OcrolusUpload } from 'ocrolus-react-widget'
+const tokenTTL = 840000
 
 function App() {
     const buttonStyle = {
@@ -26,21 +27,58 @@ function App() {
     const [options, setOptions] = useState<OcrolusUploadTypes['OcrolusUploadOptions']>({
         widgetUuid: 'bbdd9bd6-ad86-480f-b0d0-551d1cc0d9ff',
     })
+    const [tokenCreatedAt, setTokenCreationTime] = useState<number>()
 
-    const fetchToken = useCallback(
-        async () => {
-            const response = await fetch('https://auth.ocrolusexample.com/token', { method: 'POST' })
-            const json = await response.json()
+    const fetchToken = useCallback(async () => {
+        setTokenCreationTime(Date.now())
+        const response = await fetch('https://auth.ocrolusexample.com/token', { method: 'POST' })
+        const json = await response.json()
 
-            setOptions((prevOpts: OcrolusUploadTypes['OcrolusUploadOptions']) => ({ ...prevOpts, token: json.accessToken }))
-        },
-        [setOptions]
-    )
+        setOptions((prevOpts: OcrolusUploadTypes['OcrolusUploadOptions']) => ({
+            ...prevOpts,
+            token: json.accessToken,
+        }))
+        return json.accessToken
+    }, [setOptions])
+
     useEffect(() => {
-        fetchToken()
-    }, [fetchToken])
+        if (!tokenCreatedAt) {
+            fetchToken()
+        }
+    }, [fetchToken, tokenCreatedAt])
+
+    // continuous fetching token
+    // const [tokenFetchInterval, setTokenFetchInterval] = useState<NodeJS.Timer>()
+    // useEffect(() => {
+    //     const now = Date.now()
+    //     const elapsedTime = now - (tokenCreatedAt || now)
+    //     const timeBeforeExpiry = tokenTTL - elapsedTime
+    //     // This timeout will get cleared every time and we need
+    //     const timeout = setTimeout(() => {
+    //         fetchToken()
+
+    //         const interval = setInterval(() => {
+    //             fetchToken()
+    //         }, tokenTTL)
+
+    //         setTokenFetchInterval(interval)
+    //     }, timeBeforeExpiry)
+
+    //     return () => {
+    //         clearTimeout(timeout)
+    //         clearInterval(tokenFetchInterval)
+    //     }
+    // }, [fetchToken, tokenCreatedAt, tokenFetchInterval])
 
     const { ready, open } = useWidget(options)
+
+    // Just in time token management will introduce some latency
+    const openModal = useCallback(async () => {
+        const fetchTokenBeforeOpen = !tokenCreatedAt || Date.now() - tokenCreatedAt >= 15000
+        if (fetchTokenBeforeOpen) {
+            return await fetchToken()
+        }
+    }, [tokenCreatedAt, fetchToken])
 
     const moduleProps = { display: 'flex', flexDirection: 'column', alignItems: 'center' }
 
@@ -55,7 +93,13 @@ function App() {
                         <Box sx={{ marginBottom: '20px' }}> Widget Hook </Box>
                         <Box>
                             {ready ? (
-                                <Button onClick={open} sx={buttonStyle}>
+                                <Button
+                                    onClick={async () => {
+                                        await openModal()
+                                        open()
+                                    }}
+                                    sx={buttonStyle}
+                                >
                                     Launch Widget Hook Modal
                                 </Button>
                             ) : (
@@ -65,7 +109,11 @@ function App() {
                     </Box>
                     <Box sx={moduleProps}>
                         <Box sx={{ marginBottom: '20px' }}> Widget Component</Box>
-                        <OcrolusUpload {...options} loadingElement={() => <CircularProgress />}>
+                        <OcrolusUpload
+                            {...options}
+                            onOpen={openModal}
+                            loadingElement={() => <CircularProgress />}
+                        >
                             <Button sx={buttonStyle}>Launch Widget Component Modal</Button>
                         </OcrolusUpload>
                     </Box>
