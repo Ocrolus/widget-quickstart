@@ -4,7 +4,7 @@ import Sidebar from 'Components/Sidebar'
 import IncomePrompt from 'Components/IncomePrompt'
 import './App.css'
 import Module from 'Components/Module'
-import { useWidget, OcrolusUploadTypes, OcrolusUpload } from 'ocrolus-react-widget'
+import { useWidget, OcrolusUploadTypes, OcrolusUpload } from 'ocrolus-widget-react'
 const tokenTTL = 840000
 
 function App() {

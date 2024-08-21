@@ -404,4 +404,4 @@ There is a react built example for Ocrolus widget found in [react example](/reac
 
 In order to switch the frontend being leveraged in place update [the reverse proxy](/reverse-proxy/Caddyfile) change routing the entry for www.ocrolusexample.com from `frontend:3000` to `frontend-react:3001` and it will switch out the front end module being used. 
 
-Interface and usage examples can be found at [ocrolus-react-widget](https://www.npmjs.com/package/ocrolus-react-widget).
+Interface and usage examples can be found at [ocrolus-widget-react](https://www.npmjs.com/package/ocrolus-widget-react).
