@@ -8,6 +8,7 @@ This repository is meant to demonstrate a simplified environment running the Ocr
 - [Implementing the Widget](#implementing-widget-in-a-site)
   - [Widget Interfaces](#widget-interfaces)
     - [Base Functionality](#base-functionality-for-upload)
+    - [Managing Your User Sessions](#managing-your-user-sesions)
     - [Extended Functionality](#extended-functionality)
     - [Endpoints and Responses](#endpoints-and-responses)
       - [Widget Token](#widget-token-request)
@@ -57,6 +58,19 @@ At a high level to integrate the widget one must implement a couple of interface
 First a backend server must be set up with the widget credentials generated at [widget creation in the dashboard](https://dashboard.ocrolus.com/settings/widgets). Set up a back end server, prefabricated back end server examples can be found in the [node](/node/index.js) or [php](/php/routes/web.php).
 
 As seen in the examples, an endpoint we'll call `/my_token` must be set up. This should be an endpoint visible to the internet, ideally behind some level of customer authentication, as the token coming back from this endpoint will be used to upload files to your ocrolus account. In that endpoint write code leveraging the `WIDGET_CLIENT_ID` and `WIDGET_CLIENT_SECRET` we will call the [widget token endpoint](#widget-token-request) found in the [endpoints section](#endpoints-and-responses) and return the `access_token` value. Tokens generated via this endpoint have a TTL of 15 minutes so appropriately managing the lifespan of your token is on the client side.
+
+### Managing Your User Sessions
+If you are keeping long running books for your users you can make sure documents all flow into the same book via the `custom_id`. You can view this as your association ID between your user and an Ocrolus book. Using the same custom_id in your requests for the encrypted token for the widget will cause documents to flow into the same book. Utilizing different `custom_ids` will create different books. You can search for books on that `custom_id` in the [book list api](https://docs.ocrolus.com/reference/book-list) on the `xid` field.
+
+```javascript
+{
+  client_id: WIDGET_CLIENT_ID,
+  client_secret: WIDGET_CLIENT_SECRET,
+  custom_id: YOUR_CUSTOM_ID_VALUE,
+  grant_type: 'client_credentials',
+  book_name: YOUR_CUSTOM_BOOK_NAME, // This is for your purposes. This value can be anything and is the way you'll be able to find these books later inside the dashboard. So name it something meaningful to your organization
+}
+```
 
 #### getAuthToken Interface
 Second within the website where the widget will be embedded set a global **function** `getAuthToken` on the window object. This must be of type function or this will not initialize. This method should make an HTTP request to our previously set up `/my_token` endpoint and return the access_token from our endpoint [exemplified here](/frontend/src/App.tsx) lines 9-13. The widget initializer code will show a spinner and check every 500ms for the existence of this function. This must returns a legitimate JWE token and setup will be completed.
