@@ -8,7 +8,7 @@ This repository is meant to demonstrate a simplified environment running the Ocr
 - [Implementing the Widget](#implementing-widget-in-a-site)
   - [Widget Interfaces](#widget-interfaces)
     - [Base Functionality](#base-functionality-for-upload)
-    - [Managing Your User Sessions](#managing-your-user-sesions)
+    - [Managing Your User Sessions](#managing-your-user-sessions)
     - [Extended Functionality](#extended-functionality)
     - [Endpoints and Responses](#endpoints-and-responses)
       - [Widget Token](#widget-token-request)
