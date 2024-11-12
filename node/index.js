@@ -152,5 +152,5 @@ app.post('/upload', function (request, response) {
 })
 
 const server = app.listen(PORT, function () {
-    console.log('plaid-quickstart server listening on port ' + PORT)
+    console.log('quickstart server listening on port ' + PORT)
 })
