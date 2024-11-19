@@ -116,7 +116,7 @@ app.post('/upload', function (request, response) {
     if (request.body.event_name !== DOCUMENT_READY && request.body.event_name !== DOCUMENT_CLASSIFIED) {
         return response.json({})
     }
-    console.log('Downloading file', request.body.book_uuid, request.body.mixed_uploaded_doc_uui)
+    console.log('Downloading file', request.body.book_uuid, request.body.mixed_uploaded_doc_uuid)
 
     return api_issuer('/oauth/token', {
         client_id: OCROLUS_CLIENT_ID,
