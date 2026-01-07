@@ -1,0 +1,13 @@
+# Caddyfile for Local Mode
+# This file is used when running without Docker
+# localhost is used for reverse proxy
+
+www.ocrolusexample.com {
+	tls www.ocrolusexample.com+3.pem www.ocrolusexample.com+3-key.pem
+	reverse_proxy localhost:3000
+}
+
+auth.ocrolusexample.com {
+	tls auth.ocrolusexample.com+3.pem auth.ocrolusexample.com+3-key.pem
+	reverse_proxy localhost:8000
+}

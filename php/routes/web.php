@@ -6,14 +6,17 @@ use Illuminate\Support\Facades\Http;
 
 /*
 |--------------------------------------------------------------------------
-| Util Methods
+| Configuration
 |--------------------------------------------------------------------------
 |
-| We stub out customer logical space methods
+| These values are loaded from environment variables.
+| See .env file for configuration.
 */
 
-$environment = env('APP_ENV', 'production');
-$widget_uuid = env('WIDGET_UUID', '');
+$environment = 'production';
+$widget_uuid = env('OCROLUS_WIDGET_UUID', '');
+$client_id = env('OCROLUS_CLIENT_ID', '');
+$client_secret = env('OCROLUS_CLIENT_SECRET', '');
 
 $TOKEN_ISSUER_URLS = [
     "production" => 'https://widget.ocrolus.com',
@@ -23,73 +26,135 @@ $API_ISSUER_URLS = [
     "production" => 'https://auth.ocrolus.com',
 ];
 
-function is_user_logged_in() {
-    return false;
+/*
+|--------------------------------------------------------------------------
+| Utility Methods
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Get the external ID for the current user.
+ * In a real application, this would return your user's unique identifier.
+ */
+function getUserExternalId($userId = null) {
+    // Return the passed userId or generate a unique one
+    return $userId ?: 'user-' . time();
 }
 
-function get_current_user_id() {
-    return 7;
-}
+/*
+|--------------------------------------------------------------------------
+| CORS Preflight Handler
+|--------------------------------------------------------------------------
+| Handle OPTIONS requests for CORS preflight
+*/
 
-function getUserExternalId() {
-    // Check if the user is logged in.
-    if (is_user_logged_in()) {
-        // Get the current user's ID.
-        $user_id = get_current_user_id();
-        return $user_id;
-    } else {
-        $user_id = "999999";
-        return $user_id;
-    }
-}
-
+$router->options('/{any:.*}', function () {
+    return response('', 200)
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Authorization, Accept, X-Requested-With')
+        ->header('Access-Control-Max-Age', '86400');
+});
 
 /*
 |--------------------------------------------------------------------------
 | Application Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It is a breeze. Simply tell Lumen the URIs it should respond to
-| and give it the Closure to call when that URI is requested.
-|
 */
 
+// Health check endpoint
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return response()->json([
+        'status' => 'ok',
+        'service' => 'Ocrolus Widget Quickstart (PHP)',
+        'timestamp' => date('c'),
+    ]);
 });
 
-$router->get('/token', function (Request $request) use ($router, $TOKEN_ISSUER_URLS, $environment, $widget_uuid) {
-    // Get user token from the request headers or set a default value (e.g., 1234).
-    $user_token = $request->header('Authorization') || '1234';
+$router->get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => date('c'),
+    ]);
+});
 
-    // You should define the getUserExternalId function to retrieve the user's external ID.
-    $user_id = getUserExternalId($user_token);
-
-    // Define the request data to send to Ocrolus.
-    $request_data = [
-        'client_id' => 'ls2wy5PH86OOVTFw7TkAB3Kd8IB0OBU9',
-        'client_secret' => 'lsrItRO3TKY2POYO2jMstb_PGj5ebyNfy3kgok07hJzNsApiQIE3qEut_buJSKt9',
-        'custom_id' => $user_id,
-        'grant_type' => 'client_credentials',
-        'name' => 'bookName', // Customize the book name as needed.
-    ];
-
-    // Make a POST request to Ocrolus using the Laravel HTTP client.
-    $ocrolus_response = Http::post(
-        "{$TOKEN_ISSUER_URLS[$environment]}/v1/widget/{$widget_uuid}/token",
-        $request_data
-    );
-
-    // Log the request data and response for debugging.
-    error_log(json_encode($request_data));
-    error_log($ocrolus_response->body());
-
-    if ($ocrolus_response->failed()) {
-        return response()->json(['error' => 'ocrolus_error: Failed to get a token from Ocrolus'], 500);
+// Token endpoint - POST for security
+$router->post('/token', function (Request $request) use ($TOKEN_ISSUER_URLS, $environment, $widget_uuid, $client_id, $client_secret) {
+    // Validate credentials are configured
+    if (empty($widget_uuid) || empty($client_id) || empty($client_secret)) {
+        return response()->json([
+            'error' => 'Widget credentials not configured. Please check your .env file.',
+        ], 500);
     }
 
-    $response_data = $ocrolus_response->json();
+    // Get request parameters
+    $userId = $request->input('userId', getUserExternalId());
+    $bookName = $request->input('bookName', 'Widget Book');
 
-    return response()->json(['accessToken' => $response_data['access_token']]);
+    // Build request data
+    $request_data = [
+        'client_id' => $client_id,
+        'client_secret' => $client_secret,
+        'custom_id' => $userId,
+        'grant_type' => 'client_credentials',
+        'book_name' => $bookName,
+    ];
+
+    try {
+        // Make POST request to Ocrolus
+        $ocrolus_response = Http::post(
+            "{$TOKEN_ISSUER_URLS[$environment]}/v1/widget/{$widget_uuid}/token",
+            $request_data
+        );
+
+        if ($ocrolus_response->failed()) {
+            error_log('Ocrolus token request failed: ' . $ocrolus_response->body());
+            return response()->json([
+                'error' => 'Failed to get token from Ocrolus',
+                'details' => $ocrolus_response->json(),
+            ], $ocrolus_response->status());
+        }
+
+        $response_data = $ocrolus_response->json();
+
+        return response()->json([
+            'accessToken' => $response_data['access_token'],
+            'expiresIn' => $response_data['expires_in'] ?? 900,
+            'tokenType' => $response_data['token_type'] ?? 'Bearer',
+        ]);
+
+    } catch (\Exception $e) {
+        error_log('Token request error: ' . $e->getMessage());
+        return response()->json([
+            'error' => 'Internal server error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
+
+// Webhook handler for document events
+$router->post('/webhook', function (Request $request) use ($API_ISSUER_URLS, $environment, $client_id, $client_secret) {
+    $event = $request->input('event_name');
+    $bookUuid = $request->input('book_uuid');
+    $docUuid = $request->input('doc_uuid');
+
+    error_log("Received webhook: {$event} for book {$bookUuid}");
+
+    // Only process verification succeeded events
+    if ($event !== 'document.verification_succeeded') {
+        return response()->json(['status' => 'ignored']);
+    }
+
+    // Here you would typically:
+    // 1. Verify the webhook is from Ocrolus (check IP or signature)
+    // 2. Get an API token
+    // 3. Download the document if needed
+    // 4. Process the document in your system
+
+    return response()->json([
+        'status' => 'received',
+        'event' => $event,
+        'book_uuid' => $bookUuid,
+        'doc_uuid' => $docUuid,
+    ]);
 });

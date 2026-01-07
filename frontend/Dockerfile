@@ -1,16 +1,23 @@
-# pull official base image
-FROM node:16-alpine
+# Ocrolus Widget Quickstart - React Frontend
+FROM node:20-alpine
 
-# set working directory
+# Set working directory
 WORKDIR /app
 
-# install app dependencies
+# Copy package files
 COPY ./frontend/package*.json ./
-RUN npm install
 
-# add app
+# Install dependencies
+RUN npm ci
+
+# Copy application code
 COPY ./frontend ./
 
-# start app
+# Expose port
 EXPOSE 3000
+
+# Set environment
+ENV NODE_ENV=development
+
+# Start development server
 CMD ["npm", "start"]
