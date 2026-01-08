@@ -2,7 +2,7 @@
 
 The Ocrolus Widget is an embeddable document upload and bank connection interface that allows your users to securely submit financial documents directly from your application.
 
-![Ocrolus Widget Quickstart](/sample.png)
+![Ocrolus Widget Quickstart](./screenshot-initial.png)
 
 ---
 
@@ -156,6 +156,8 @@ The Ocrolus widget seamlessly supports Plaid integration, allowing you to secure
 
 ### Document Upload Flow
 
+![Document Upload](./screenshot-uploaded.png)
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         DOCUMENT UPLOAD FLOW                             │
@@ -205,6 +207,8 @@ The Ocrolus widget seamlessly supports Plaid integration, allowing you to secure
 | Error | Red X | Upload or processing failed (see error message) |
 
 ### Bank Connection (Plaid) Flow
+
+![Bank Account Connected](./screenshot-bank-connected.png)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
