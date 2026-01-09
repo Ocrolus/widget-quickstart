@@ -1,6 +1,14 @@
-import { PropsWithChildren } from 'react'
-import { Card } from '@mui/material'
+import { PropsWithChildren } from 'react';
+import { Card } from '@mui/material';
 
-export default function Module({ children }: PropsWithChildren) {
-    return <Card sx={{padding: '15px'}}>{children}</Card>
+interface ModuleProps extends PropsWithChildren {
+  className?: string;
+}
+
+export default function Module({ children, className }: ModuleProps) {
+  return (
+    <Card className={className} sx={{ padding: '15px' }}>
+      {children}
+    </Card>
+  );
 }

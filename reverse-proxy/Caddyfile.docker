@@ -1,8 +1,14 @@
+# Caddyfile for Docker Mode
+# This file is used when running with docker-compose
+# Docker service names are used for reverse proxy
+
 www.ocrolusexample.com {
 	tls www.ocrolusexample.com+3.pem www.ocrolusexample.com+3-key.pem
 	reverse_proxy frontend:3000
 }
+
 auth.ocrolusexample.com {
 	tls auth.ocrolusexample.com+3.pem auth.ocrolusexample.com+3-key.pem
 	reverse_proxy node:8000
 }
+

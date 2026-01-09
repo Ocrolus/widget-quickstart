@@ -1,42 +1,139 @@
-.App {
-  text-align: center;
+/* Ocrolus Example Broker Theme */
+
+* {
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+/* Pulse animation for event indicator */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* Widget frame styling */
+#ocrolus-widget-frame {
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.App-link {
-  color: #61dafb;
+#ocrolus-widget-frame iframe {
+  border: none !important;
+  width: 100% !important;
+  min-height: 300px !important;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for event log */
+.MuiBox-root::-webkit-scrollbar {
+  width: 8px;
+}
+
+.MuiBox-root::-webkit-scrollbar-track {
+  background: #2d3748;
+  border-radius: 4px;
+}
+
+.MuiBox-root::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-radius: 4px;
+}
+
+.MuiBox-root::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+/* Gradient text effect for headers */
+.gradient-text {
+  background: linear-gradient(135deg, #1a365d 0%, #38a169 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover effects */
+.MuiCard-root {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.MuiCard-root:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Button hover effects */
+.MuiButton-root {
+  transition: all 0.2s ease-in-out;
+}
+
+.MuiButton-contained:hover {
+  transform: translateY(-1px);
+}
+
+/* Alert styling */
+.MuiAlert-root {
+  border-radius: 8px;
+}
+
+/* Stepper styling */
+.MuiStepIcon-root.Mui-completed {
+  color: #38a169 !important;
+}
+
+.MuiStepIcon-root.Mui-active {
+  color: #1a365d !important;
+}
+
+/* Loading shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
   }
-  to {
-    transform: rotate(360deg);
+  100% {
+    background-position: 200% 0;
   }
 }
 
-.content-column > div {
-  margin-bottom: 24px;
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .MuiContainer-root {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .MuiAppBar-root,
+  .MuiSnackbar-root {
+    display: none !important;
+  }
 }

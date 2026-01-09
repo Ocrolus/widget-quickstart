@@ -2,8 +2,9 @@
 
 require_once __DIR__.'/../vendor/autoload.php';
 
+// Load .env from root widget-quickstart directory (two levels up from bootstrap/)
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
-    dirname(__DIR__)
+    dirname(__DIR__, 2)
 ))->bootstrap();
 
 date_default_timezone_set(env('APP_TIMEZONE', 'UTC'));
@@ -72,8 +73,9 @@ $app->configure('app');
 |
 */
 
+// CORS is now handled in public/index.php before the framework loads
 // $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
+//     App\Http\Middleware\CorsMiddleware::class
 // ]);
 
 // $app->routeMiddleware([

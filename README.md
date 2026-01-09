@@ -1,422 +1,902 @@
-## Ocrolus Widget Quickstart
+# Ocrolus Widget Quickstart
 
-This repository is meant to demonstrate a simplified environment running the Ocrolus quickstart widget. The intent is to show in a couple of languages what a widget integration would entail so that developers can apply their knowledge of typical web development environments to the interfaces of the Ocrolus widget.
+The Ocrolus Widget is an embeddable document upload and bank connection interface that allows your users to securely submit financial documents directly from your application.
 
-![Ocrolus Widget quickstart](/sample.png)
+![Ocrolus Widget Quickstart](./screenshot-initial.png)
 
-# Table of Contents
-- [Implementing the Widget](#implementing-widget-in-a-site)
-  - [Widget Interfaces](#widget-interfaces)
-    - [Base Functionality](#base-functionality-for-upload)
-    - [Managing Your User Sessions](#managing-your-user-sessions)
-    - [Extended Functionality](#extended-functionality)
-    - [Endpoints and Responses](#endpoints-and-responses)
-      - [Widget Token](#widget-token-request)
-      - [Ocrolus Token](#ocrolus-token-request) 
-      - [Ocrolus Book](#ocrolus-book-request)
-      - [Document](#document-request)
-      - [Webhook](#webhook-example)
-- [Setting up Example Sites](#setting-up-the-example-site)
-  - [1. Pull the repository](#1-pull-the-repository)
-    - [Note for Windows](#note-for-windows)
-  - [2. Set up widget environment variables](#2-set-up-widget-environment-variables)
-  - [3. Global prerequisites](#3-global-prerequisites)
-    - [MKcert](#MKcert)
-    - [Default Configuration](#default-configuration)
-      - [Default Dashboard](#default-dashboard)
-      - [Default Caddyfile](#default-caddyfile)
-      - [Default Routing](#default-routing)
-  - [4. Run the quickstart](#4-run-the-quickstart)
-    - [Run with Docker](#run-with-docker)
-      - [Pre-requisites](#pre-requisites-1)
-      - [Running](#running)
-    - [Run without Docker](#run-without-docker)
-      - [Pre-requisites](#pre-requisites)
-      - [1. Initializing the certs and dependencies](#1-initializing-the-certs-and-dependencies)
-      - [2. Running the backend](#2-running-the-backend)
-        - [Node](#node)
-      - [3. Running the frontend](#3-running-the-frontend)
-    - [Custom Configuration](#custom-configuration)
-      - [Custom Dashboard](#custom-dashboard)
-      - [Custom Caddyfile](#custom-caddyfile)
-      - [Custom Routing](#custom-routing)
-  - [5. Optional Webhooks](#5-optional-webhooks)
-    - [Setting up ngrok](#setting-up-ngrok)
-  - [6. React Example](#6-react-example)
+---
 
+## Table of Contents
 
-# Implementing Widget in a Site
+- [Overview](#overview)
+- [Features](#features)
+- [Widget Setup in Dashboard](#widget-setup-in-dashboard)
+  - [Creating a Widget](#creating-a-widget)
+  - [Widget Configuration Options](#widget-configuration-options)
+  - [Plaid Configuration](#plaid-configuration)
+    - [Step 1: Connect Your Plaid Account](#step-1-connect-your-plaid-account)
+    - [Step 2: Enable Plaid in Your Widget](#step-2-enable-plaid-in-your-widget)
+- [How It Works](#how-it-works)
+  - [Document Upload Flow](#document-upload-flow)
+  - [Bank Connection (Plaid) Flow](#bank-connection-plaid-flow)
+- [Integration Guide](#integration-guide)
+  - [Prerequisites](#prerequisites)
+  - [Step 1: Backend Token Endpoint](#step-1-backend-token-endpoint)
+  - [Step 2: Frontend Integration](#step-2-frontend-integration)
+  - [Step 3: Event Handling](#step-3-event-handling)
+- [Running the Quickstart](#running-the-quickstart)
+  - [Environment Setup](#environment-setup)
+  - [Running with Docker](#running-with-docker)
+  - [Running without Docker](#running-without-docker)
+- [Events](#events)
+  - [Upload Events](#upload-events)
+  - [Plaid Events](#plaid-events)
+  - [Widget Lifecycle Events](#widget-lifecycle-events)
+- [Webhooks](#webhooks)
+- [API Reference](#api-reference)
+- [Support](#support)
 
-## Widget Interfaces
+---
 
-At a high level to integrate the widget one must implement a couple of interfaces to get the base functionality, there's extra interfaces for extended functionality.
+## Overview
 
-![Ocrolus Widget quickstart](/interfaces.png)
+This repository provides working examples in multiple languages (Node.js, PHP) to demonstrate widget integration. Use these examples to understand how to embed the Ocrolus Widget in your application.
 
-### Base Functionality For Upload
+**Key Benefits:**
+- **Secure** - Documents are uploaded directly to Ocrolus via encrypted iframe
+- **Customizable** - Match your brand with custom colors and messaging
+- **Easy Integration** - Simple script tag integration
+- **Real-time Events** - Track upload progress and user actions
 
-First a backend server must be set up with the widget credentials generated at [widget creation in the dashboard](https://dashboard.ocrolus.com/settings/widgets). Set up a back end server, prefabricated back end server examples can be found in the [node](/node/index.js) or [php](/php/routes/web.php).
+---
 
-As seen in the examples, an endpoint we'll call `/my_token` must be set up. This should be an endpoint visible to the internet, ideally behind some level of customer authentication, as the token coming back from this endpoint will be used to upload files to your ocrolus account. In that endpoint write code leveraging the `WIDGET_CLIENT_ID` and `WIDGET_CLIENT_SECRET` we will call the [widget token endpoint](#widget-token-request) found in the [endpoints section](#endpoints-and-responses) and return the `access_token` value. Tokens generated via this endpoint have a TTL of 15 minutes so appropriately managing the lifespan of your token is on the client side.
+## Features
 
-### Managing Your User Sessions
-If you are keeping long running books for your users you can make sure documents all flow into the same book via the `custom_id`. You can view this as your association ID between your user and an Ocrolus book. Using the same custom_id in your requests for the encrypted token for the widget will cause documents to flow into the same book. Utilizing different `custom_ids` will create different books. You can search for books on that `custom_id` in the [book list api](https://docs.ocrolus.com/reference/book-list) on the `xid` field.
+The Ocrolus Widget provides a secure, embeddable interface for collecting financial documents from your users.
+
+### Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Secure Upload** | Documents are uploaded directly to Ocrolus via an encrypted iframe |
+| **Bank Connection** | Plaid integration for automatic bank statement retrieval |
+| **Customizable UI** | Match your brand with custom colors and messaging |
+| **Real-time Events** | Track upload progress and user actions via postMessage events |
+| **Webhook Notifications** | Receive notifications when documents are processed |
+
+### Document Upload
+- Drag-and-drop file upload interface
+- Supports PDF, JPG, JPEG, and PNG files (up to 200MB)
+- Real-time upload status tracking
+- Automatic document processing, classification, and data extraction
+
+### Bank Connection (Plaid)
+- Secure bank account linking via Plaid
+- Automatic bank statement retrieval via Asset Reports
+- Wide financial institution coverage
+- User credentials entered directly with the bank (Ocrolus never sees them)
+
+---
+
+## Widget Setup in Dashboard
+
+For complete details, see the [official Ocrolus Widget documentation](https://docs.ocrolus.com/docs/widget).
+
+### Creating a Widget
+
+1. Log in to the [Ocrolus Dashboard](https://dashboard.ocrolus.com)
+2. Navigate to **Account & Settings → Embedded Widget**
+3. Click **ADD WIDGET**
+4. Configure your widget settings:
+   - Enter a **Widget Name** for your reference
+   - Add your website domain(s) to **Allowed URLs**
+   - Enable **Show upload documents** and/or **Show connect to bank**
+   - Customize colors and text as needed
+5. Use the **Preview** section to test your widget:
+   - Select **file-uploader** from the dropdown to test uploads
+6. Click **SAVE** in the top right corner
+7. Copy your generated credentials:
+   - **Widget UUID**
+   - **Client ID** 
+   - **Client Secret** (save securely - not accessible later)
+   - **JavaScript Snippet** for frontend integration
+
+> **Security Note:** Store your Client ID and Client Secret securely on your server. Never expose them in frontend code.
+
+### Widget Configuration Options
+
+| Setting | Description |
+|---------|-------------|
+| **Widget Name** | A name for your reference (not shown to users) |
+| **Allowed URLs** | Domains where the widget can be embedded (e.g., `https://yoursite.com`). The widget iframe will refuse to render unless your URL is in this list. |
+| **Branding Color** | Primary color for buttons and accents (hex code) |
+| **Text Color** | Text color (hex code) |
+| **Show upload documents** | Enable the "Upload Documents" section |
+| **Upload Header** | Header text (e.g., "Upload Your Bank Statements") |
+| **Upload Description** | Description text (e.g., "Please upload your last 3 months of statements") |
+| **Show connect to bank** | Enable the "Connect to Bank" section (requires Plaid configuration) |
+| **Bank Header** | Header text for bank section |
+| **Bank Description** | Description text for bank section |
+
+### Plaid Configuration
+
+The Ocrolus widget seamlessly supports Plaid integration, allowing you to securely store and manage Plaid API keys directly from the Dashboard.
+
+#### Step 1: Connect Your Plaid Account
+
+1. Navigate to **Dashboard → Account & Settings → Embedded Widget**
+2. Click **CONNECT PLAID ACCOUNT** (or **UPDATE ACCOUNT DETAILS** if already connected)
+3. Log in to your [Plaid Dashboard](https://dashboard.plaid.com) and retrieve:
+   - **Plaid Client ID**
+   - **Plaid Client Secret** (Production)
+4. Enter these credentials in the **Configure Plaid Account** dialog
+5. Click **Done** to save
+
+> **Note:** Your Plaid credentials are securely stored by Ocrolus. You can update them at any time from the Embedded Widget settings.
+
+#### Step 2: Enable Plaid in Your Widget
+
+1. Go to **Dashboard → Account & Settings → Embedded Widget**
+2. Edit an existing widget or create a new one
+3. Turn ON the **Show connect to bank** toggle
+4. Customize the bank connection header and description text
+5. Click **SAVE**
+
+> **Important:** Ensure at least one of **Show upload documents** or **Show connect to bank** is enabled. Don't disable one unless the other is active.
+
+**Plaid Features:**
+- Users can securely link their bank accounts
+- Bank credentials are entered directly with the bank (Ocrolus never sees them)
+- Bank statements are automatically retrieved via Plaid's Asset Reports
+- Statements are processed and available in your Ocrolus dashboard
+
+---
+
+## How It Works
+
+### Document Upload Flow
+
+![Document Upload](./screenshot-uploaded.png)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         DOCUMENT UPLOAD FLOW                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. USER CLICKS "Upload Documents"
+   │
+   ▼
+2. UPLOAD MODAL OPENS
+   │  User drags & drops or selects files
+   │  Supported: PDF, JPG, JPEG, PNG (max 200MB)
+   │
+   ▼
+3. USER CLICKS "Submit"
+   │  → EVENT: USER_FILE_UPLOADER_SUBMIT
+   │
+   ▼
+4. FILES UPLOADED TO OCROLUS
+   │  HTTP upload to Ocrolus servers
+   │  → EVENT: USER_UPLOAD_RECEIVED
+   │  Status: "Received" (processing)
+   │
+   ▼
+5. DOCUMENT PROCESSING
+   │  • Security scan
+   │  • Document classification
+   │  • OCR extraction
+   │
+   ▼
+6. PROCESSING COMPLETE
+   │  → EVENT: USER_UPLOAD_COMPLETE (success)
+   │  → EVENT: USER_UPLOAD_FAILED (if error)
+   │  Status: "Uploaded" or "Error"
+   │
+   ▼
+7. USER CLOSES MODAL
+   → EVENT: USER_FILE_UPLOADER_CLOSE
+```
+
+**Upload States:**
+
+| State | Icon | Description |
+|-------|------|-------------|
+| Uploading | Spinner | File is being uploaded to Ocrolus |
+| Received | Yellow dot | Upload successful, document is being processed |
+| Uploaded | Green checkmark | Document processed and available in Ocrolus |
+| Error | Red X | Upload or processing failed (see error message) |
+
+### Bank Connection (Plaid) Flow
+
+![Bank Account Connected](./screenshot-bank-connected.png)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      BANK CONNECTION (PLAID) FLOW                        │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. USER CLICKS "Connect to Bank"
+   │
+   ▼
+2. PLAID LINK OPENS
+   │  Secure Plaid modal (not Ocrolus)
+   │  User searches for their bank
+   │
+   ▼
+3. USER LOGS INTO BANK
+   │  Credentials entered directly with bank
+   │  Ocrolus never sees user's bank credentials
+   │
+   ▼
+4. USER SELECTS ACCOUNTS
+   │  User chooses which accounts to connect
+   │
+   ▼
+5. CONNECTION SUCCESSFUL
+   │  → EVENT: LINK_SUCCESS
+   │  Plaid modal closes
+   │  Widget shows success state
+   │
+   ▼
+6. ASSET REPORT GENERATED (Background)
+   │  Plaid generates asset report (30 seconds - 5 minutes)
+   │  Bank statements retrieved automatically
+   │
+   ▼
+7. STATEMENTS AVAILABLE
+   Documents appear in your Ocrolus dashboard
+   Webhook notification sent (if configured)
+```
+
+**If an error occurs:**
+- `PLAID_ERROR` event is emitted with error details
+- User can retry the connection
+- See [Events](#plaid-events) for error handling
+
+---
+
+## Integration Guide
+
+### Prerequisites
+
+1. An Ocrolus account with API access
+2. A widget created in the [Ocrolus Dashboard](https://dashboard.ocrolus.com/settings/widgets)
+3. Your **Widget UUID**, **Client ID**, and **Client Secret**
+4. A backend server to securely generate tokens
+
+### Step 1: Backend Token Endpoint
+
+Create a server endpoint that exchanges your credentials for a widget token. **Never expose your Client Secret to the frontend.**
+
+#### Node.js Example
 
 ```javascript
+const express = require('express');
+const app = express();
+
+const WIDGET_UUID = process.env.OCROLUS_WIDGET_UUID;
+const CLIENT_ID = process.env.OCROLUS_CLIENT_ID;
+const CLIENT_SECRET = process.env.OCROLUS_CLIENT_SECRET;
+
+app.post('/api/widget-token', async (req, res) => {
+  const { userId, bookName } = req.body;
+  
+  const response = await fetch(
+    `https://widget.ocrolus.com/v1/widget/${WIDGET_UUID}/token`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        custom_id: userId,           // Your user identifier (links documents to same book)
+        book_name: bookName,         // Folder name in Ocrolus (e.g., "John Smith Application")
+        grant_type: 'client_credentials'
+      })
+    }
+  );
+  
+  const { access_token } = await response.json();
+  res.json({ accessToken: access_token });
+});
+```
+
+**Token Parameters:**
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `client_id` | Yes | Your Widget Client ID |
+| `client_secret` | Yes | Your Widget Client Secret |
+| `custom_id` | Yes | Your user identifier. Documents with the same `custom_id` go to the same book. Use this to link multiple uploads from the same user. |
+| `book_name` | Yes | Book name in Ocrolus dashboard. This helps you identify the book later (e.g., "John Smith Loan Application"). |
+| `grant_type` | Yes | Always `client_credentials` |
+
+> **Tip:** Use a consistent `custom_id` for each user session. If a user uploads additional files later, using the same `custom_id` will add them to the existing book. You can search for books by this ID using the `xid` field in the [Book List API](https://docs.ocrolus.com/reference/book-list).
+
+**Token Response:**
+
+```json
 {
-  client_id: WIDGET_CLIENT_ID,
-  client_secret: WIDGET_CLIENT_SECRET,
-  custom_id: YOUR_CUSTOM_ID_VALUE,
-  grant_type: 'client_credentials',
-  book_name: YOUR_CUSTOM_BOOK_NAME, // This is for your purposes. This value can be anything and is the way you'll be able to find these books later inside the dashboard. So name it something meaningful to your organization
+  "access_token": "eyJhbGciOiJSU0...",
+  "expires_in": 900,
+  "token_type": "Bearer"
 }
 ```
 
-#### getAuthToken Interface
-Second within the website where the widget will be embedded set a global **function** `getAuthToken` on the window object. This must be of type function or this will not initialize. This method should make an HTTP request to our previously set up `/my_token` endpoint and return the access_token from our endpoint [exemplified here](/frontend/src/App.tsx) lines 9-13. The widget initializer code will show a spinner and check every 500ms for the existence of this function. This must returns a legitimate JWE token and setup will be completed.
+> **Note:** Tokens have a 15-minute TTL. Implement token refresh logic to handle long user sessions.
 
-Paste the widget initializer code snippet from the widget creation screen and that completes the setup for the base widget functionality
+### Step 2: Frontend Integration
 
-### Extended Functionality
+#### Script Tag Integration
 
-There's a second set of interfaces to implement for the reingestion flow of documents back into a lender's system. This flow outlines how to get documents uploaded directly to Ocrolus via the widget back into a the file system owned by the lender (you).
+1. Add the container element where you want the widget to appear:
 
-First set up an endpoint for handling Ocrolus webhooks we'll call this `/handler`. Expose this to the internet on our back end server from the previous step, be aware of the risks associated with handling any request sent to this endpoint be sure to take common sense precautions. The handler then needs to handle the `document.verification_succeeded` event from Ocrolus. Go to https://dashboard.ocrolus.com/settings/webhooks and set up a new webhook pointing to `https://www.yourwebsite.com/handler` and make sure the webhook is sending `document.verification_succeeded` events. Inside the code of our `/handler` endpoint we need to do a few things:
-1. Filter all non verification_succeeded events. Validate that this is a document from a widget book.
-    1. if your company doesn't use the xid value on book creation endpoint you could check for non-null value for book.xid.
-    2. if your company leverages the xid field then you'll need to use some logic to determine whether this is a document you want to download. To do this you could leverage whether book_type is equal to 'WIDGET' or if you have a dictionary of xids you've used in the past you can look at the xid on the book. This requires a token from the [ocrolus token endpoint](#ocrolus-token-request) and a request to the [book endpoint](#ocrolus-book-request) with the access_token.
-2. Once we find a verification_succeeded event we need to send a request to to the [ocrolus token endpoint](#ocrolus-token-request)
-3. We then use the token from the ocrolus token endpoint, then we can make a document download request to the [document download endpoint](#document-request). Then write the file to the lender's file system.
-
-### Endpoints and Responses
-#### Widget Token Request
-https://widget.ocrolus.com/v1/widget/${WIDGET_UUID}/token
-```javascript
-{
-  client_id: WIDGET_CLIENT_ID,
-  client_secret: WIDGET_CLIENT_SECRET,
-  custom_id: YOUR_CUSTOM_ID_VALUE,
-  grant_type: 'client_credentials',
-  book_name: YOUR_CUSTOM_BOOK_NAME, // This is for your purposes. This value can be anything and is the way you'll be able to find these books later inside the dashboard. So name it something meaningful to your organization
-}
+```html
+<div id="ocrolus-widget-frame"></div>
 ```
 
-Widget Token Response
-```javascript
-{
-  "access_token": JWT_TOKEN,
-  "expires_in": NUMBER_OF_MILLISECONDS,
-  "token_type": 'Bearer'
-}
+2. Define the token provider function (BEFORE the widget script):
+
+```html
+<script>
+window.getAuthToken = async function() {
+  const response = await fetch('/api/widget-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId: 'user-123',          // Your user's ID
+      bookName: 'Loan Application' // Descriptive name
+    })
+  });
+  const { accessToken } = await response.json();
+  return accessToken;
+};
+</script>
 ```
 
-#### Ocrolus Token Request
-https://auth.ocrolus.com/oauth/token
+3. Add the widget initializer script (from your dashboard):
 
-```javascript
-{
-  client_id: WIDGET_CLIENT_ID,
-  client_secret: WIDGET_CLIENT_SECRET,
-  grant_type: 'client_credentials',
-}
+```html
+<script id="ocrolus-initializer-script">
+  (function(w, d, s, o, h, u, f, js, fjs) {
+    w[o] = w[o] || function() { (w[o].q = w[o].q || []).push(arguments); };
+    (js = d.createElement(s)), (fjs = d.getElementsByTagName(s)[0]);
+    js.id = o;
+    js.dataset.host = h;
+    js.dataset.uuid = u;
+    js.src = f;
+    js.async = 1;
+    fjs.parentNode.insertBefore(js, fjs);
+  })(
+    window,
+    document,
+    'script',
+    'ocrolus_script',
+    'https://widget.ocrolus.com',
+    'YOUR_WIDGET_UUID',
+    'https://widget.ocrolus.com/static/initializer-sdk.bundle.js'
+  );
+  ocrolus_script('init');
+</script>
 ```
 
-Ocrolus Token Response
-```javascript
-{ 
-  "access_token": JWT_TOKEN,
-  "token_type": 'Bearer',
-  "expires_in": NUMBER_OF_MILLISECONDS,
-}
-```
+### Step 3: Event Handling
 
-#### Ocrolus Book Request
-
-```
-GET https://api.ocrolus.com/v1/book/info?book_uuid=${BOOK_UUID}
-```
-
-Ocrolus Book Request
-```javascript
- {
-  status: 200,
-  response: {
-    name: 'Widget Book',
-    created: '2023-11-20T18:52:07Z',
-    created_ts: '2023-11-20T18:52:07Z',
-    pk: 41970113,
-    owner_email: 'EMAIL_OF_BOOK_CREATOR',
-    is_public: true,
-    book_uuid: '67234233-f8ae-4345-9f7a-cb80509540df4',
-    xid: YOUR_CUSTOM_ID_VALUE,
-    book_type: 'WIDGET',
-    id: 41970113,
-    is_shared_or_public_book: true,
-    docs: [ [DOCUMENT_DATA_OBJECT], ],
-    mixed_docs: [ [DOCUMENT_DATA_OBJECT], ],
-    bank_accounts: { '162222119': [BANK_ACCOUNT_DATA_OBJECT] },
-    custom_filters: {},
-    status_tags: { '2386333': [Object], '2386480': [Object] },
-    book_class: 'INSTANT'
-  },
-  message: 'OK'
-}
-```
-
-#### Document Request
+Listen for widget events to track user actions and update your UI:
 
 ```javascript
-GET https://api.ocrolus.com/v2/document/download?doc_uuid=${YOUR_DOC_UUID}
+window.addEventListener('message', (event) => {
+  const { type, ...data } = event.data;
+  
+  switch (type) {
+    case 'USER_UPLOAD_COMPLETE':
+      // Update your UI to show success
+      showNotification(`Successfully uploaded ${data.uploads.length} file(s)`);
+      // Store the bookUuid for later reference
+      saveBookUuid(data.uploads[0]?.bookUuid);
+      break;
+      
+    case 'USER_UPLOAD_FAILED':
+      // Show error to user
+      showError(`Upload failed: ${data.uploads[0]?.message}`);
+      break;
+      
+    case 'LINK_SUCCESS':
+      // Bank connection successful
+      showNotification('Bank connected successfully!');
+      break;
+      
+    case 'PLAID_ERROR':
+      // Handle Plaid errors
+      if (data.error.errorType === 'USER_ERROR') {
+        showError(data.error.displayMessage);
+      } else {
+        showError('Unable to connect to your bank. Please try again later.');
+      }
+      break;
+      
+    case 'USER_FILE_UPLOADER_CLOSE':
+      // User closed the modal
+      console.log(`Session complete: ${data.uploadedFileCount} files uploaded`);
+      break;
+  }
+});
 ```
 
-Document Response
-```javascript
-<Buffer 25 50 44 46 2d 31 2e 33 0a 25 93 8c 8b 9e 20 52 65 70 6f 72 74 4c 61 62 20 47 65 6e 65 72 61 74 65 64 20 50 44 46 20 64 6f 63 75 6d 65 6e 74 20 68 74 ... 891313 more bytes>
-```
+---
 
-#### Webhook Example
+## Running the Quickstart
 
-```javascript
-{
-  mixed_uploaded_doc_pk: 8458742,
-  book_pk: 98871,
-  uploaded_image_group_uuid: null,
-  status: 'VERIFICATION_COMPLETE',
-  mixed_uploaded_doc_uuid: 'e7e35a16-0240-4c46-a290-7f0ad933f93e',
-  notification_reason: 'Document verified',
-  book_uuid: 'fc8f9719-0089-44f1-b2hf-053320239930',
-  uploaded_doc_uuid: '06bdw77de-e97l-22f8-vzdd-a710447c4ed5',
-  event_name: 'document.verification_succeeded',
-  notification_type: 'STATUS',
-  doc_uuid: '06gh45dh-o83v-86v8-vvvv-v713347b5ed5',
-  severity: 'LOW',
-  uploaded_image_group_pk: null,
-  uploaded_doc_pk: 64241242
-}
-```
+This quickstart provides working examples you can run locally to test the widget integration. It supports both **Docker mode** and **Local mode** (without Docker).
 
-# Setting Up The Example Site
-## 1. Pull the repository
+### Quick Start (Recommended)
 
-Using https:
-
-```sh
-git clone https://github.com/Ocrolus/widget-quickstart;
-cd widget-quickstart
-```
-
-Alternatively, if you use ssh:
-
-```sh
-git clone git@github.com:Ocrolus/widget-quickstart.git;
-cd widget-quickstart
-```
-
-### Note for Windows
-Note - because this repository makes use of symbolic links, to run this on a Windows machine, make sure you have checked the "enable symbolic links" box when you download Git to your local machine. Then you can run the above commands to clone the quickstart. Otherwise, you may open your Git Bash terminal as an administrator and use the following command when cloning the project
-
-```sh
-git clone -c core.symlinks=true https://github.com/Ocrolus/widget-quickstart
-```
-
-## 2. Set up widget environment variables
+The easiest way to get started is using our setup script. This works on **macOS**, **Linux**, and **Windows** (Git Bash/WSL).
 
 ```bash
-cp .env.example .env
+# Clone the repository
+git clone https://github.com/Ocrolus/widget-quickstart.git
+cd widget-quickstart
+
+# Run setup (one-time)
+./setup.sh
 ```
 
-Copy `.env.example` to a new file called `.env`. `OCROLUS_CLIENT_ID`, `OCROLUS_CLIENT_SECRET`, `OCROLUS_WIDGET_UUID`, `ENVIRONMENT` must all be set. Get your Client ID and secrets from the dashboard: https://dashboard.ocrolus.com/settings/widgets.
+The **setup script** will:
+1. ✅ Check prerequisites (mkcert, Docker/Node.js)
+2. ✅ Guide you through hosts file configuration
+3. ✅ Prompt for your widget credentials
+4. ✅ Create the `.env` file
+5. ✅ Update the widget configuration in the frontend
+6. ✅ Generate SSL certificates automatically
 
-Open `/frontend/public/index.html` and delete the example snippet code on line 47 and paste the widget snippet code from the dashboard website on that line 47.
+After setup, choose your preferred run mode:
+- **Docker mode**: Easiest setup, everything runs in containers
+- **Local mode**: Run services directly on your machine
 
-## 3. Global Prerequisites
+### Prerequisites
 
-### Mkcert
-Install `mkcert` [how-to](https://github.com/FiloSottile/mkcert#installation). This is a global pre-requisite as the development certificate to be trusted locally via your browser it needs to be executed in the browser's executing environment.
+#### Install mkcert (Required)
 
-Generate and install new CA root certificate using `mkcert`
-```sh
-mkcert -install
+```bash
+# macOS
+brew install mkcert
+
+# Windows (with chocolatey)
+choco install mkcert
+
+# Linux (Ubuntu/Debian)
+sudo apt install libnss3-tools
+curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+chmod +x mkcert-v*-linux-amd64
+sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
 ```
 
-### Default Configuration
+#### For Docker Mode
+- [Docker](https://docs.docker.com/get-docker/) installed and running
 
-#### Default Dashboard
-Configure a widget in dashboard and make sure that in the `Allowed URLS` field of your configuration the URL you expect to use is allowed. The widget iframe will refuse to render unless your URL is in the allow list. To allow for the default configuration to work simply add `www.ocrolusexample.com`.
+#### For Local Mode
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [Caddy](https://caddyserver.com/docs/install) (reverse proxy)
 
-#### Default Caddyfile
-Running `make initialize_certs` will create two sets of CA signed keys to be utilized by your reverse proxy for the backend and the front end respectively. It will copy those certs into the `reverse-proxy` directory.
+#### Configure Hosts File
 
-The caddyfile should be configured to run functionally as is provided the `Routing` step is followed.
+Add these entries to your hosts file (the setup script will guide you):
 
-#### Default Routing
-Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` replace the `MY.ALLOWED_URL.TLD` with the URL you want to host locally. If you want to use the base configuration set the etc hosts to contain
+**macOS/Linux** (`/etc/hosts`):
+```bash
+sudo sh -c 'echo "127.0.0.1 www.ocrolusexample.com" >> /etc/hosts'
+sudo sh -c 'echo "127.0.0.1 auth.ocrolusexample.com" >> /etc/hosts'
+```
 
+**Windows** (Run Notepad as Administrator):
+```
+notepad C:\Windows\System32\drivers\etc\hosts
+```
+Add:
 ```
 127.0.0.1 www.ocrolusexample.com
 127.0.0.1 auth.ocrolusexample.com
 ```
 
-## 4. Run the quickstart
+#### Configure Allowed URLs in Dashboard
 
-### Run with Docker
+Add `www.ocrolusexample.com` to your widget's "Allowed URLs" in the [Ocrolus Dashboard](https://dashboard.ocrolus.com/settings/widgets).
 
-#### Pre-requisites
+### Option 1: Running with Docker
 
-- `make` available in command line 
-- Docker installed and running [installation](https://docs.docker.com/get-docker/)
-- Your `.env` variables initialized
+After running `./setup.sh`, start all services with Docker:
 
-#### Running
-
-There are two `make` commands relative to running with docker.
-
-`make rebuild_docker` Which will rebuild and run the docker containers.
-`make run_docker` Which will do a cached, if possible, build and run the docker containers
-
-`make rebuild_docker` will allow you to, if needed, update any contextual values, docker environment, or otherwise environmental changes. Otherwise just run `make run_docker`
-
-This will run both the `node` and `php` instances at port 8000 and 8001 respectively. In order to switch which backend you want to use augment the routing in your caddyfile to point to `php:8001`
-
-### Run without Docker
-
-#### Pre-requisites
-
-- This repo should work with node versions >=14.
-- `.env` copied and values enumerated
-- [npm](https://www.npmjs.com/get-npm)
-- If using Windows, a command line utility capable of running basic Unix shell commands including `Make`, otherwise look at the `Makefile` and run the commands defined under each macro command individually.
-- [caddy](https://caddyserver.com/docs/install) or some other form of reverse proxy mechanism we'll discuss as if using caddy 
-
-#### 1. Initializing the certs and dependencies
-
-##### Certs
-
-We need to modify and run the reverse proxy.
-
-Update the /reverse-proxy/Caddyfile reverse-proxy url to localhost rather than the docker network alias.
-
+```bash
+make run_docker
 ```
-<my_frontend_url> {
-	tls <my_frontend_url>+3.pem <my_frontend_url>+3-key.pem
-	reverse_proxy localhost:3000
+
+This starts:
+- Node.js backend server (port 8000)
+- Frontend (port 3000)
+- Caddy reverse proxy (port 443)
+- (Optional) ngrok for webhooks
+
+Visit **`https://www.ocrolusexample.com`** in your browser.
+
+To stop all services:
+```bash
+make stop_docker
+```
+
+### Option 2: Running Locally (without Docker)
+
+After running `./setup.sh`, you need to start three services in separate terminal windows:
+
+#### Terminal 1: Start the Reverse Proxy
+```bash
+make run_caddy_local
+```
+
+#### Terminal 2: Start the Backend
+```bash
+make run_node
+```
+
+#### Terminal 3: Start the Frontend
+```bash
+make run_frontend
+```
+
+Visit **`https://www.ocrolusexample.com`** in your browser.
+
+> **Note:** All three services must be running simultaneously. Use `Ctrl+C` in each terminal to stop them.
+
+### Manual Setup (Without Scripts)
+
+If you prefer to set up manually without using the scripts:
+
+1. **Clone and configure:**
+```bash
+git clone https://github.com/Ocrolus/widget-quickstart.git
+cd widget-quickstart
+```
+
+2. **Create `.env` file with your credentials:**
+```bash
+OCROLUS_WIDGET_UUID=your-widget-uuid
+OCROLUS_CLIENT_ID=your-client-id
+OCROLUS_CLIENT_SECRET=your-client-secret
+OCROLUS_WIDGET_ENVIRONMENT=production
+```
+
+3. **Update the widget UUID in frontend:**
+
+Open `frontend/public/index.html` and replace `YOUR_WIDGET_UUID` with your actual Widget UUID.
+
+4. **Generate SSL certificates:**
+```bash
+make initialize_certs
+```
+
+5. **Run with Docker:**
+```bash
+make run_docker
+```
+
+---
+
+## Events
+
+The widget communicates with your application via browser `postMessage` events. Listen for these to track user actions and upload status.
+
+### Listening for Events
+
+```javascript
+window.addEventListener('message', (event) => {
+  // Verify the event is from Ocrolus (recommended)
+  if (!event.origin.includes('ocrolus.com')) return;
+  
+  const { type, ...data } = event.data;
+  
+  switch (type) {
+    case 'USER_UPLOAD_COMPLETE':
+      console.log('Upload complete:', data.uploads);
+      break;
+    case 'PLAID_ERROR':
+      console.error('Plaid error:', data.error);
+      break;
+    // Handle other events...
+  }
+});
+```
+
+### Upload Events
+
+#### `USER_FILE_UPLOADER_OPEN`
+User clicked "Upload Documents" to open the upload modal.
+
+```javascript
+{ type: 'USER_FILE_UPLOADER_OPEN', timestamp: '2024-01-15T10:30:00.000Z' }
+```
+
+#### `USER_FILE_UPLOADER_SUBMIT`
+User clicked "Submit" to upload selected files.
+
+```javascript
+{
+  type: 'USER_FILE_UPLOADER_START',
+  timestamp: '2024-01-15T10:30:15.000Z',
+  uploads: [
+    { name: 'bank_statement.pdf', size: 1024000, type: 'application/pdf' }
+  ]
 }
-<my_server_url> {
-	tls <my_server_url>+3.pem <my_server_url>+3-key.pem
-	reverse_proxy localhost:8000
+```
+
+#### `USER_UPLOAD_RECEIVED`
+Files have been received by Ocrolus and processing has started.
+
+```javascript
+{
+  type: 'USER_UPLOAD_RECEIVED',
+  timestamp: '2024-01-15T10:30:18.000Z',
+  uploads: [
+    { name: 'bank_statement.pdf', size: 1024000, type: 'application/pdf' }
+  ]
 }
 ```
 
-```bash
-cd ./reverse-proxy  
-sudo caddy start --config Caddyfile
-```
+#### `USER_UPLOAD_COMPLETE`
+File has been fully processed and is available in your Ocrolus dashboard.
 
-##### Dependencies
-
-Install all dependencies via `make install_all`
-
-#### 2. Running the backend
-
-Once executing with one of the commands below the backend will be running on http://localhost:8000. This backend should represent your customer server.
-
-##### PHP
-
-```bash
-$ cd ./php
-$ composer install --working-dir=php
-$ php -S localhost:8001 -t public
-```
-
-##### Node
-
-```bash
-$ cd ./node
-$ npm ci
-$ ./server.sh
-```
-
-alternatively 
-
-`make run_node`
-
-#### 3. Running the frontend
-
-```bash
-$ cd ./frontend
-$ npm start
-```
-
-alternatively `make run_frontend`
-
-### Custom Configuration
-**Only follow this set of steps if you're looking to use a custom URL for your example app.**
-
-If the configuration is custom then the `initialize the certs` step will not be sufficient. If configuring custom urls then run locally the following commands:
-
-Generate and install new CA root certificate using `mkcert`
-```sh
-mkcert -install
-```
-Generate self-signed ssl certificate to us in caddy
-```sh
-mkcert <my_frontend_url> localhost 127.0.0.1 ::1
-mkcert <my_server_url> localhost 127.0.0.1 ::1
-mv <my_frontend_url>+3-key.pem reverse-proxy/
-mv <my_frontend_url>+3.pem reverse-proxy/
-mv <my_server_url>+3-key.pem reverse-proxy/
-mv <my_server_url>+3.pem reverse-proxy/
-```
-
-
-#### Custom Dashboard
-Configure a widget in dashboard and add <my_frontend_url> to the `Allowed URLS` field.
-
-#### Custom Caddyfile
-If a custom configuration is desired configure the /reverse-proxy/Caddyfile such that `www.ocrolusexample.com` and `auth.ocrolusexample.com` are updated to the URLs that you want to use for your development machine.
-
-```
-<my_frontend_url> {
-	tls <my_frontend_url>+3.pem <my_frontend_url>+3-key.pem
-	reverse_proxy frontend:3000
-}
-<my_server_url> {
-	tls <my_server_url>+3.pem <my_server_url>+3-key.pem
-	reverse_proxy node:8000
+```javascript
+{
+  type: 'USER_UPLOAD_COMPLETE',
+  timestamp: '2024-01-15T10:30:45.000Z',
+  uploads: [
+    {
+      name: 'bank_statement.pdf',
+      size: 1024000,
+      type: 'application/pdf',
+      bookUuid: 'abc123-def456-...'  // Book where document was added
+    }
+  ],
+  errors: []
 }
 ```
 
-#### Custom Routing
-Configure /etc/hosts to contain a record for `127.0.0.1 <MY.ALLOWED_URL.TLD>` replace the `MY.ALLOWED_URL.TLD` with the URL you want to host locally.
+#### `USER_UPLOAD_FAILED`
+File upload or processing failed.
 
-```
-127.0.0.1 <my_frontend_url>
-127.0.0.1 <my_server_url>
-```
-
-## 5. Optional Webhooks
-Webhooks are a pattern to be notified of events within the ocrolus system. Lenders may want to download the file data that is uploaded through the widget as it bypasses the lender source data may need to be stored in some properietary manner to the lender. As such Webhooks and the `/v2/document/download` endpoint on the ocrolus API can be leveraged to get resources in any other system programatically. 
-
-### Setting Up The Webhook for Running
-The quickstart leverages `ngrok` to create a URL available to the wider internet and Ocrolus that points at the local server. To get started [Sign up with ngrok](https://dashboard.ngrok.com/get-started/your-authtoken) and get an auth token. Make a local copy of the `ngrok-example.yml` file rename it `ngrok.yml` and paste your auth token inside the authtoken field.
-
-Ngrok will now get launched with the typical `make run_docker` command. Once the ngrok container has been launched there will be log output from the `widget-quickstart-ngrok-1` pod akin to the following:
-
-```bash
-widget-quickstart-ngrok-1     | t=2023-06-22T17:07:21+0000 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://node:8000 url=https://5264-104-28-236-176.ngrok-free.app
+```javascript
+{
+  type: 'USER_UPLOAD_FAILED',
+  timestamp: '2024-01-15T10:30:20.000Z',
+  uploads: [
+    {
+      name: 'corrupted.pdf',
+      size: 1024000,
+      type: 'application/pdf',
+      message: 'Document could not be processed'
+    }
+  ]
+}
 ```
 
-Copy this URL and navigate a browser to the dashboard and create a webhook with this ngrok url as the outbound URL. Steps to set up the webhook in dashboard can be found [here](https://docs.ocrolus.com/docs/configure-and-manage). The event that needs to be enabled is `document.verification_succeeded`.
+#### `USER_FILE_UPLOADER_CLOSE`
+User closed the upload modal.
 
-**Note**
-Due to the drawbacks of the free version of ngrok a new URL will be generated each time so every time the ngrok server is restarted, killed, and run again a new URL will be generated. The webhook to be used will need to be updated with this outbound url. As such if local changes are desired to be made within this widget example the commands `rebuild_node` and `rebuild_frontend` are preferrable to a full rebuild or rerun of the docker containers.
+```javascript
+{ 
+  type: 'USER_FILE_UPLOADER_CLOSE',
+  timestamp: '2024-01-15T10:31:00.000Z',
+  uploadedFileCount: 3  // Total successful uploads in this session
+}
+```
 
-Now whenever a document is verified, the local server will be notified via webhook that a document is ready for download and downloaded to the local docker container. Logically in a production scenario this would be specified by the implementer to download the document to whatever desired file system that is specified.
+### Plaid Events
 
+#### `LINK_SUCCESS`
+User successfully connected their bank account.
 
-## 6. React Example
-There is a react built example for Ocrolus widget found in [react example](/react-example). It will naturally build on the docker build or it can be built locally. 
+```javascript
+{ type: 'LINK_SUCCESS' }
+```
 
-In order to switch the frontend being leveraged in place update [the reverse proxy](/reverse-proxy/Caddyfile) change routing the entry for www.ocrolusexample.com from `frontend:3000` to `frontend-react:3001` and it will switch out the front end module being used. 
+#### `PLAID_ERROR`
+An error occurred during the bank connection flow.
 
-Interface and usage examples can be found at [ocrolus-widget-react](https://www.npmjs.com/package/ocrolus-widget-react).
+```javascript
+ {
+  type: 'PLAID_ERROR',
+  error: {
+    errorType: 'USER_ERROR' | 'INSTITUTION_ERROR' | 'OCROLUS_ERROR',
+    errorCode: 'INVALID_CREDENTIALS',
+    errorMessage: 'The credentials were not correct',
+    displayMessage: 'The provided credentials were not correct. Please try again.',
+    reason: 'User entered incorrect bank login credentials'
+  }
+}
+```
+
+**Error Types:**
+
+| Error Type | Description | User Action |
+|------------|-------------|-------------|
+| `USER_ERROR` | User action issue (wrong password, timeout, etc.) | User can retry |
+| `INSTITUTION_ERROR` | Bank is temporarily unavailable | Wait and retry later |
+| `OCROLUS_ERROR` | System error | Contact support if persistent |
+
+**Common Error Codes:**
+
+| Code | Description |
+|------|-------------|
+| `INVALID_CREDENTIALS` | User entered wrong bank login |
+| `INVALID_MFA` | User entered wrong MFA code |
+| `ITEM_LOCKED` | Bank account locked (too many failed attempts) |
+| `INSTITUTION_DOWN` | Bank is experiencing technical issues |
+| `INSTITUTION_NOT_RESPONDING` | Bank is temporarily unavailable |
+
+### Widget Lifecycle Events
+
+#### `DESTROY_MODAL_IFRAME`
+Send this event to programmatically close the current modal.
+
+```javascript
+window.postMessage({ type: 'DESTROY_MODAL_IFRAME' }, '*');
+```
+
+#### `DESTROY_OCROLUS_WIDGET`
+Send this event to completely remove the widget from your page.
+
+```javascript
+window.postMessage({ type: 'DESTROY_OCROLUS_WIDGET' }, '*');
+```
+
+---
+
+## Webhooks
+
+Configure webhooks to receive notifications when documents are uploaded and processed. This is especially useful for downloading documents that users upload via the widget back to your own systems.
+
+For detailed webhook documentation, see the [Ocrolus Webhooks Guide](https://docs.ocrolus.com/docs/configure-and-manage).
+
+### Setup
+
+1. Go to [Ocrolus Dashboard → Settings → Webhooks](https://dashboard.ocrolus.com/settings/webhooks)
+2. Create a new webhook with your endpoint URL
+3. Enable the `document.verification_succeeded` event
+
+### Webhook Payload Example
+
+```json
+{
+  "event_name": "document.verification_succeeded",
+  "book_uuid": "fc8f9719-0089-44f1-b2hf-053320239930",
+  "book_pk": 98871,
+  "doc_uuid": "06gh45dh-o83v-86v8-vvvv-v713347b5ed5",
+  "uploaded_doc_uuid": "06bdw77de-e97l-22f8-vzdd-a710447c4ed5",
+  "mixed_uploaded_doc_uuid": "e7e35a16-0240-4c46-a290-7f0ad933f93e",
+  "status": "VERIFICATION_COMPLETE",
+  "notification_reason": "Document verified",
+  "notification_type": "STATUS",
+  "severity": "LOW"
+}
+```
+
+### Identifying Widget Documents
+
+To determine if a webhook is for a widget-uploaded document:
+
+1. **Check book_type:** Query the Book Info API and check if `book_type === 'WIDGET'`
+2. **Check xid:** If you use the `custom_id` parameter, it will appear as `xid` on the book
+
+### Downloading Documents
+
+After receiving a webhook, you can download the original document:
+
+```javascript
+// 1. Get an API token
+const tokenResponse = await fetch('https://auth.ocrolus.com/oauth/token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    client_id: CLIENT_ID,
+    client_secret: CLIENT_SECRET,
+    grant_type: 'client_credentials'
+  })
+});
+const { access_token } = await tokenResponse.json();
+
+// 2. (Optional) Verify this is a widget book
+const bookResponse = await fetch(
+  `https://api.ocrolus.com/v1/book/info?book_uuid=${bookUuid}`,
+  { headers: { Authorization: `Bearer ${access_token}` } }
+);
+const bookData = await bookResponse.json();
+
+if (bookData.response.book_type === 'WIDGET') {
+  // 3. Download the document
+  const docResponse = await fetch(
+    `https://api.ocrolus.com/v2/document/download?doc_uuid=${docUuid}`,
+    { headers: { Authorization: `Bearer ${access_token}` } }
+  );
+  const fileBuffer = await docResponse.arrayBuffer();
+  
+  // Save to your file system
+  fs.writeFileSync('document.pdf', Buffer.from(fileBuffer));
+}
+```
+
+---
+
+## API Reference
+
+### Widget Token Endpoint
+
+```
+POST https://widget.ocrolus.com/v1/widget/{widget_uuid}/token
+```
+
+**Request:**
+```json
+{
+  "client_id": "your_client_id",
+  "client_secret": "your_client_secret",
+  "custom_id": "user-identifier",
+  "book_name": "Application Documents",
+  "grant_type": "client_credentials"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJSU0...",
+  "expires_in": 900,
+  "token_type": "Bearer"
+}
+```
+
+### Auth Token Endpoint
+
+For API calls (webhooks, document download):
+
+```
+POST https://auth.ocrolus.com/oauth/token
+```
+
+**Request:**
+```json
+{
+  "client_id": "your_client_id",
+  "client_secret": "your_client_secret",
+  "grant_type": "client_credentials"
+}
+```
+
+### Document Download
+
+```
+GET https://api.ocrolus.com/v2/document/download?doc_uuid={doc_uuid}
+Authorization: Bearer {access_token}
+```
+
+### Book Info
+
+```
+GET https://api.ocrolus.com/v1/book/info?book_uuid={book_uuid}
+Authorization: Bearer {access_token}
+```
+
+---
+
+## Support
+
+- **Widget Documentation:** [docs.ocrolus.com/docs/widget](https://docs.ocrolus.com/docs/widget)
+- **API Documentation:** [docs.ocrolus.com](https://docs.ocrolus.com)
+- **Webhooks Guide:** [docs.ocrolus.com/docs/configure-and-manage](https://docs.ocrolus.com/docs/configure-and-manage)
+- **Dashboard:** [dashboard.ocrolus.com](https://dashboard.ocrolus.com)
+- **Plaid Dashboard:** [dashboard.plaid.com](https://dashboard.plaid.com)
+- **Support:** Contact your Ocrolus representative or [raise a request](https://docs.ocrolus.com)
+
+---
+
+## License
+
+Copyright © Ocrolus. All rights reserved.
